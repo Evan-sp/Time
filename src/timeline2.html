@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Timeline</title>
+  <link href="./output.css" rel="stylesheet">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    .title-transition {
+      transition: opacity 400ms ease-in-out, transform 400ms ease-in-out;
+      opacity: 0;
+      transform: translateY(0px);
+    }
+
+    .title-transition.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .flex.gap-2.ml-14.mb-2 button {
+      transition: transform 300ms ease-in-out;
+    }
+
+    /* Updated marker-blur styles to apply to children of an event group */
+    .event.marker-blur circle {
+      filter: blur(1px);
+      opacity: 0.4;
+      transition: filter 300ms ease-in-out, opacity 300ms ease-in-out;
+    }
+
+    .event.marker-blur text {
+      opacity: 0.2;
+      transition: opacity 300ms ease-in-out;
+    }
+
+    .event {
+      transition: filter 300ms ease-in-out, opacity 300ms ease-in-out;
+    }
+
+    /* Add after your existing styles */
+    .developer-button-active {
+      position: relative;
+    }
+    
+    .developer-button-active::after {
+      content: '';
+      position: absolute;
+      top: -3px;
+      left: -3px;
+      right: -3px;
+      bottom: -3px;
+      border-radius: 10px;
+      border: 2px solid;
+      border-color: inherit;
+      opacity: 0.2;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 text-gray-500 max-h-screen p-8 flex flex-col font-thin relative">
+    <div id="developerButtons" class="flex gap-2 mb-6">
+        <button class="px-3 py-1 text-sm bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors">All</button>
+        <button class="px-3 py-1 text-sm bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors">XAI</button>
+        <button class="px-3 py-1 text-sm bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors">OpenAI</button>
+        <button class="px-3 py-1 text-sm bg-purple-100 text-purple-600 rounded-lg hover:bg-purple-200 transition-colors">qwen</button>
+        <button class="px-3 py-1 text-sm bg-orange-100 text-orange-600 rounded-lg hover:bg-orange-200 transition-colors">Anthropic</button>
+        <button class="px-3 py-1 text-sm bg-cyan-100 text-cyan-600 rounded-lg hover:bg-cyan-200 transition-colors">DeepSeek</button>
+    </div>
+    <h1 class="text-3xl font-extralight text-gray-400 mb-10">Releases</h1>
+    <div class="container flex flex-col max-h-screen">
+        <div class="flex">
+            <div id="descriptionBox" class="mr-12 w-[30rem] border-0 border-dashed border-gray-200/0 bg-gray-200/0 rounded-2xl flex flex-col">
+                <h1 id="eventDescription" class="text-6xl text-gray-600 title-transition visible"></h1>
+                <p class="text-xl text-gray-700">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque euismod magna sit amet ligula pretium, in porta felis convallis. Phasellus accumsan purus in viverra facilisis. Vestibulum eget gravida tellus, eu consequat lorem.
+                </p>
+            </div>
+            <div id="statsBox" class="w-[12rem]">
+                <h1 class="text-3xl text-gray-600 title-transition visible">Stats</h1>
+                <div class="flex gap-2 items-center title-transition visible">
+                    <div class="h-3 w-3 bg-blue-300 rounded-full"></div>
+                    <p class="font-semibold cursor-pointer" data-stat="Parameters">Parameters: </p>
+                    <p class="font-extralight" id="parametersValue">10B</p>
+                </div>
+                <div class="flex gap-2 items-center title-transition visible">
+                    <div class="h-3 w-3 bg-green-300 rounded-full"></div>
+                    <p class="font-semibold cursor-pointer" data-stat="FLOPs">FLOPs: </p>
+                    <p class="font-extralight" id="flopsValue">300B</p>
+                </div>
+                <div class="flex gap-2 items-center title-transition visible">
+                    <div class="h-3 w-3 bg-purple-300 rounded-full"></div>
+                    <p class="font-semibold cursor-pointer" data-stat="Layers">Layers: </p>
+                    <p class="font-extralight" id="layersValue">10k</p>
+                </div>
+                <div class="flex flex-col">
+                    <div class="flex gap-2 items-center title-transition visible">
+                        <div class="h-3 w-3 bg-gray-300 rounded-full"></div>
+                        <p class="font-semibold cursor-pointer" data-stat="GPUs">GPUs: </p>
+                        <p class="font-extralight" id="gpusValue">100k</p>
+                    </div>
+                    <p class="text-gray-500 text-sm ml-6 flex">Colossus Supercluster</p>
+                </div>
+                <div class="flex gap-2 items-center title-transition visible">
+                    <p>Developed By: </p>
+                    <p id="developerValue" class="cursor-pointer" data-stat="Xai Labs">Xai Labs</p>
+                </div>
+            </div>
+            <div id="statsBox2" class="mt-9 -ml-6">
+                <div class="flex gap-2 items-center">
+                    <div class="h-3 w-3 bg-orange-500 rounded-full"></div>
+                    <p class="font-semibold cursor-pointer" data-stat="Speed">Speed: </p>
+                    <p class="font-extralight title-transition" id="speedValue">12k/s</p>
+                </div>
+                <div class="flex gap-2 items-center">
+                    <div class="h-3 w-3 bg-yellow-300 rounded-full"></div>
+                    <p class="font-semibold cursor-pointer" data-stat="API Price">API Price: </p>
+                    <p class="font-extralight title-transition" id="apiPriceValue">5$ per 10k tokens</p>
+                </div>
+                <div class="flex gap-2 items-center">
+                    <div class="h-3 w-3 bg-fuchsia-300 rounded-full"></div>
+                    <p class="font-semibold cursor-pointer" data-stat="Training Cost">Training Cost: </p>
+                    <p class="font-extralight title-transition" id="trainingCostValue">5M</p>
+                </div>
+            </div>
+        </div>
+        <div class="mt-10 w-[79rem] flex flex-col justify-center items-center border-0 border-gray-200 bg-gray-200/0 rounded-2xl">
+            <div class="flex w-full items-center">
+                <div id="zoomOutContainer" style="width: 0; opacity: 0; overflow: hidden; pointer-events: none; transition: width 500ms, opacity 500ms;">
+                    <button id="zoomOutBtn" 
+                            class="px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg transition-all duration-500 hover:bg-blue-600">
+                        &lt;
+                    </button>
+                </div>
+                <div id="zoomButtonsContainer" class="flex gap-4 transition-all duration-500">
+                    <button id="zoom30Btn" class="px-4 py-2 bg-blue-300 text-white font-semibold rounded-lg transition-all duration-500 hover:bg-blue-400">
+                        30s
+                    </button>
+                    <button id="zoom60Btn" class="px-4 py-2 bg-blue-300 text-white font-semibold rounded-lg transition-all duration-500 hover:bg-blue-400">
+                        60s
+                    </button>
+                    <button id="zoom75Btn" class="px-4 py-2 bg-blue-300 text-white font-semibold rounded-lg transition-all duration-500 hover:bg-blue-400">
+                        75s
+                    </button>
+                    <button id="zoom90Btn" class="px-4 py-2 bg-blue-300 text-white font-semibold rounded-lg transition-all duration-500 hover:bg-blue-400">
+                        90s
+                    </button>
+                    <button id="zoom95Btn" class="px-4 py-2 bg-blue-300 text-white font-semibold rounded-lg transition-all duration-500 hover:bg-blue-400">
+                        95s
+                    </button>
+                </div>
+            </div>
+            <div class="relative" id="timeline-container">
+            </div>
+            <div class="mt-4">
+            <p class="text-gray-500 text-sm">Time Unit: Seconds — — —</p>
+            </div>
+        </div>
+    </div>
+    <script>
+      // Data
+      const data = [
+        { event: "O1",   position: 0,    time: 0,    parameters:"10B",  flops:"300B",  layers:"10k",  gpus:"100k",  developer:"XAI",       speed: "12k/s",  apiPrice: "5$ per 10k tokens",  trainingCost: "5M" },
+        { event: "O3",   position: 40,   time: 40,   parameters:"12B",  flops:"350B",  layers:"12k",  gpus:"90k",   developer:"OpenAI",    speed: "15k/s",  apiPrice: "5.5$ per 10k tokens", trainingCost: "5.5M" },
+        { event: "O4",   position: 50,   time: 50,   parameters:"14B",  flops:"400B",  layers:"14k",  gpus:"80k",   developer:"Anthropic", speed: "18k/s",  apiPrice: "6$ per 10k tokens",   trainingCost: "6M" },
+        { event: "O4.1", position: 60,   time: 60,   parameters:"16B",  flops:"450B",  layers:"16k",  gpus:"70k",   developer:"DeepSeek",  speed: "20k/s",  apiPrice: "6.5$ per 10k tokens", trainingCost: "6.5M" },
+        { event: "O4.2", position: 70,   time: 70,   parameters:"18B",  flops:"500B",  layers:"18k",  gpus:"60k",   developer:"qwen",      speed: "22k/s",  apiPrice: "7$ per 10k tokens",   trainingCost: "7M" },
+        { event: "O4.3", position: 77,   time: 77,   parameters:"20B",  flops:"550B",  layers:"20k",  gpus:"50k",   developer:"OpenAI",    speed: "24k/s",  apiPrice: "7.5$ per 10k tokens", trainingCost: "7.5M" },
+        { event: "O4.4", position: 82,   time: 82,   parameters:"22B",  flops:"600B",  layers:"22k",  gpus:"40k",   developer:"XAI",       speed: "26k/s",  apiPrice: "8$ per 10k tokens",   trainingCost: "8M" },
+        { event: "O2",   position: 80,   time: 80,   parameters:"24B",  flops:"650B",  layers:"24k",  gpus:"35k",   developer:"Anthropic", speed: "28k/s",  apiPrice: "8.5$ per 10k tokens", trainingCost: "8.5M" },
+        { event: "O2.5", position: 90,   time: 90,   parameters:"26B",  flops:"700B",  layers:"26k",  gpus:"30k",   developer:"DeepSeek",  speed: "30k/s",  apiPrice: "9$ per 10k tokens",   trainingCost: "9M" },
+        { event: "O3.5", position: 95,   time: 95,   parameters:"28B",  flops:"750B",  layers:"28k",  gpus:"25k",   developer:"qwen",      speed: "32k/s",  apiPrice: "9.5$ per 10k tokens", trainingCost: "9.5M" },
+        { event: "O5",   position: 98,   time: 98,   parameters:"30B",  flops:"800B",  layers:"30k",  gpus:"20k",   developer:"OpenAI",    speed: "34k/s",  apiPrice: "10$ per 10k tokens",  trainingCost: "10M" },
+        { event: "O6",   position: 98.5, time: 98.5, parameters:"32B",  flops:"850B",  layers:"32k",  gpus:"18k",   developer:"XAI",       speed: "36k/s",  apiPrice: "10.5$ per 10k tokens", trainingCost: "10.5M" },
+        { event: "O7",   position: 99,   time: 99,   parameters:"34B",  flops:"900B",  layers:"34k",  gpus:"16k",   developer:"Anthropic", speed: "38k/s",  apiPrice: "11$ per 10k tokens",  trainingCost: "11M" },
+        { event: "O8",   position: 99.5, time: 99.5, parameters:"36B",  flops:"950B",  layers:"36k",  gpus:"14k",   developer:"DeepSeek",  speed: "40k/s",  apiPrice: "11.5$ per 10k tokens", trainingCost: "11.5M" },
+        { event: "O30",  position: 100,  time: 100,  parameters:"38B",  flops:"1000B", layers:"38k",  gpus:"12k",   developer:"qwen",      speed: "42k/s",  apiPrice: "12$ per 10k tokens",  trainingCost: "12M" }
+      ];
+
+      // Dimensions and settings
+      const width = 1264; // adjust as needed
+      const height = 250; // increased from 150 to 300
+      const margin = { left: 50, right: 50 };
+      const pixelDistance = 40; // Minimum pixel distance for full opacity
+      const hoverTransitionDuration = 400; // Duration for hover animations
+
+      // Keep track of domain history for zoom in/out
+      let xDomainStack = [[0, 100]];
+
+      // Reference to the Zoom Out button and its container
+      const zoomOutBtn = document.getElementById('zoomOutBtn');
+      const zoomOutContainer = document.getElementById('zoomOutContainer');
+
+      // Add this color mapping object near the top of the script
+      const developerColors = {
+        "All": { bg: "rgba(107, 114, 128, 0.2)", fill: "#6B7280" },     // gray
+        "XAI": { bg: "rgba(59, 130, 246, 0.2)", fill: "#3b82f6" },      // blue
+        "OpenAI": { bg: "rgba(34, 197, 94, 0.2)", fill: "#22c55e" },      // green
+        "qwen": { bg: "rgba(168, 85, 247, 0.2)", fill: "#a855f7" },       // purple
+        "Anthropic": { bg: "rgba(249, 115, 22, 0.2)", fill: "#f97316" },  // orange
+        "DeepSeek": { bg: "rgba(6, 182, 212, 0.2)", fill: "#06b6d4" }     // cyan
+      };
+
+      // Global variable to track which developer is currently highlighted by top buttons
+      let currentHighlightedDeveloper = null;
+      // Global variable to track which developer filter is active (for click toggle)
+      let selectedDevelopers = new Set(["All"]);  // Start with "All" selected
+
+      // Add this global variable near the top of the script
+      let isInitialRender = true;
+
+      // Create an SVG inside the #timeline-container
+      const svg = d3.select("#timeline-container")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+      // Create horizontal scale, domain will be updated later
+      const x = d3.scaleLinear()
+        .domain(xDomainStack[0])
+        .range([margin.left, width - margin.right]);
+
+      // Add this function to calculate opacity based on proximity
+      function calculateOpacity(currentPoint, allPoints, scale) {
+        const currentX = scale(currentPoint.position);
+        
+        // Count how many points are within pixelDistance
+        const nearbyPoints = allPoints.filter(p => {
+          const pX = scale(p.position);
+          return Math.abs(pX - currentX) < pixelDistance && p !== currentPoint;
+        });
+
+        // More nearby points = more transparent
+        return Math.max(0.2, 1 - (nearbyPoints.length * 0.2));
+      }
+
+      // A helper function to draw or re-draw the timeline
+      function render(transitionDuration = 750) {
+        // Use 0 duration for initial render, otherwise use provided duration
+        const duration = isInitialRender ? 0 : transitionDuration;
+        
+        const currentDomain = xDomainStack[xDomainStack.length - 1];
+        x.domain(currentDomain);
+
+        // Update the main timeline line
+        svg.selectAll(".timeline-line")
+          .data([null]) // just one line
+          .join("line")
+          .attr("class", "timeline-line")
+          .transition().duration(duration)
+          .attr("x1", x.range()[0])
+          .attr("y1", height / 2)
+          .attr("x2", x.range()[1])
+          .attr("y2", height / 2)
+          .attr("stroke-dasharray", "10,6")
+          .attr("stroke", "#D1D5DB")
+          .attr("stroke-width", 2);
+
+        // Bind data to groups and display only if a marker matches the filtered developer
+        const group = svg.selectAll(".event")
+          .data(data, d => d.event)
+          .join("g")
+          .attr("class", "event");
+
+        // Transition each group to new positions
+        group
+          .transition().duration(duration)
+          .attr("transform", d => `translate(${x(d.position)}, ${height / 2})`);
+
+        // Update opacity calculation helper function
+        function getMarkerOpacity(d) {
+          if (d.position < currentDomain[0]) return 0;
+          if (selectedDevelopers.has("All")) return calculateOpacity(d, data, x);
+          return selectedDevelopers.has(d.developer) ? 1 : 0.2;
+        }
+
+        // Update outer circle opacity
+        group.selectAll(".outer-circle")
+          .data(d => [d])
+          .join("circle")
+          .attr("class", "outer-circle")
+          .attr("fill", d => developerColors[d.developer].bg)
+          .transition().duration(duration)
+          .attr("r", 18)
+          .style("opacity", d => getMarkerOpacity(d));
+
+        // Update inner circle opacity
+        group.selectAll(".inner-circle")
+          .data(d => [d])
+          .join("circle")
+          .attr("class", "inner-circle")
+          .attr("fill", d => developerColors[d.developer].fill)
+          .transition().duration(duration)
+          .attr("r", 6)
+          .style("opacity", d => getMarkerOpacity(d));
+
+        // Add hover effects to the groups
+        group
+          .on("mouseenter", function(event, d) {
+            updateStats(d);
+
+            const description = d3.select("#eventDescription");
+            description.classed("visible", false);  // Start transition out
+            
+            setTimeout(() => {
+              description.text(d.event);
+              description.classed("visible", true);  // Transition in
+            }, 200);  // Half of the transition duration
+
+            // Increase size of circles on hover and remove transparency
+            d3.select(this).select(".outer-circle")
+              .transition()
+              .duration(hoverTransitionDuration)
+              .attr("r", 24)
+              .style("opacity", 1);
+            
+            d3.select(this).select(".inner-circle")
+              .transition()
+              .duration(hoverTransitionDuration)
+              .attr("r", 8)
+              .style("opacity", 1);
+          })
+          .on("mouseleave", function() {
+            // Return to original size
+            d3.select(this).select(".outer-circle")
+              .transition()
+              .duration(hoverTransitionDuration)
+              .attr("r", 18);
+            
+            d3.select(this).select(".inner-circle")
+              .transition()
+              .duration(hoverTransitionDuration)
+              .attr("r", 6);
+          });
+
+        // Calculate vertical offsets for labels to avoid overlap
+        const labelSpacing = 20; // Increased from 15 to 20
+        const labelHeight = 20; // Increased from 15 to 20
+        
+        // Sort data points by x position
+        const sortedData = [...data].sort((a, b) => a.position - b.position);
+        const labelPositions = new Map();
+
+        // Calculate vertical positions
+        sortedData.forEach((d, i) => {
+          if (i === 0) {
+            labelPositions.set(d.event, -labelHeight);
+            return;
+          }
+
+          const prevPoint = sortedData[i - 1];
+          const currentX = x(d.position);
+          const prevX = x(prevPoint.position);
+          const prevY = labelPositions.get(prevPoint.event);
+
+          // Check if labels would overlap
+          if (currentX - prevX < 30) { // Adjust this value based on your needs
+            // Place this label higher than the previous one
+            labelPositions.set(d.event, prevY - labelSpacing);
+          } else {
+            // Reset to base height if no overlap
+            labelPositions.set(d.event, -labelHeight);
+          }
+        });
+
+        // Update connecting line opacity
+        group.selectAll(".connecting-line")
+          .data(d => [d])
+          .join("line")
+          .attr("class", "connecting-line")
+          .transition().duration(duration)
+          .attr("x1", 0)
+          .attr("y1", d => labelPositions.get(d.event) + 5)  // Start 5px below the label
+          .attr("x2", 0)
+          .attr("y2", -14)  // Changed from -5 to -14 to stop before outer circle
+          .attr("stroke", "#9CA3AF")  // Light gray color
+          .attr("stroke-width", 1)
+          .style("opacity", d => {
+            if (selectedDevelopers.has("All")) {
+              return labelPositions.get(d.event) < -labelHeight ? 0.5 : 0;
+            }
+            return selectedDevelopers.has(d.developer) ? 
+              (labelPositions.get(d.event) < -labelHeight ? 0.5 : 0) : 0.1;
+          });
+
+        // Update label opacity
+        group.selectAll(".label-event")
+          .data(d => [d])
+          .join("text")
+          .attr("class", "label-event")
+          .attr("text-anchor", "middle")
+          .text(d => d.event)
+          .transition().duration(duration)
+          .attr("y", d => labelPositions.get(d.event))
+          .style("fill", "#374151")
+          .style("opacity", d => selectedDevelopers.has("All") ? 1 : 
+            (selectedDevelopers.has(d.developer) ? 1 : 0.2));
+
+        // Time label, moved below the marker
+        group.selectAll(".label-time")
+          .data(d => [d])
+          .join("text")
+          .attr("class", "label-time")
+          .attr("y", 30)
+          .attr("text-anchor", "middle")
+          .style("font-size", "0.75rem")
+          .style("fill", "#374151")
+          .text(d => d.time + "s")
+          .transition().duration(duration)
+          .style("opacity", d => {
+            if (d.position < currentDomain[0]) return 0;
+            if (selectedDevelopers.has("All")) {
+              return calculateOpacity(d, data, x);
+            }
+            return selectedDevelopers.has(d.developer) ? 1 : 0.2;
+          });
+
+        // We add click handlers to each group's circles
+        group.on("click", (event, d) => zoomToEvent(d));
+
+        // Set isInitialRender to false after first render
+        isInitialRender = false;
+      }
+
+      function zoomToEvent(d) {
+        // Save current domain
+        const lastDomain = xDomainStack[xDomainStack.length - 1];
+        xDomainStack.push([d.position, lastDomain[1]]);
+        
+        // Smoothly reveal the zoom out container
+        zoomOutContainer.style.width = '60px';
+        zoomOutContainer.style.opacity = '1';
+        zoomOutContainer.style.pointerEvents = 'auto';
+        
+        // Re-render with new domain
+        render();
+      }
+
+      function zoomOut() {
+        // If there's nothing to revert, do nothing
+        if (xDomainStack.length <= 1) return;
+
+        // Pop last domain (the current one)
+        xDomainStack.pop();
+
+        // If we're fully back, hide the zoom out container
+        if (xDomainStack.length === 1) {
+          zoomOutContainer.style.width = '0';
+          zoomOutContainer.style.opacity = '0';
+          zoomOutContainer.style.pointerEvents = 'none';
+        }
+        
+        // Re-render with the previous domain
+        render();
+      }
+
+      // New function to zoom to a specific threshold (e.g., 30 seconds)
+      function zoomToThreshold(threshold) {
+        // Get the current domain from the top of the stack
+        const lastDomain = xDomainStack[xDomainStack.length - 1];
+        if (threshold < lastDomain[1]) {  // only zoom in if threshold is less than current maximum domain
+          xDomainStack.push([threshold, lastDomain[1]]);
+          // Smoothly reveal the zoom out container
+          zoomOutContainer.style.width = '60px';
+          zoomOutContainer.style.opacity = '1';
+          zoomOutContainer.style.pointerEvents = 'auto';
+          render();
+        }
+      }
+
+      // Attach zoomOut to the button
+      zoomOutBtn.addEventListener("click", zoomOut);
+
+      // Attach the new event listener to the "30s" button
+      document.getElementById('zoom30Btn').addEventListener('click', function() {
+        zoomToThreshold(30);
+      });
+
+      // Attach event listeners for additional time threshold buttons
+      document.getElementById('zoom60Btn').addEventListener('click', function() {
+        zoomToThreshold(60);
+      });
+      document.getElementById('zoom75Btn').addEventListener('click', function() {
+        zoomToThreshold(75);
+      });
+      document.getElementById('zoom90Btn').addEventListener('click', function() {
+        zoomToThreshold(90);
+      });
+      document.getElementById('zoom95Btn').addEventListener('click', function() {
+        zoomToThreshold(95);
+      });
+
+      // Initial render
+      render();
+
+      // Set default description to first event
+      d3.select("#eventDescription")
+        .text(data[0].event)
+        .classed("visible", true);
+
+      // Set initial stats based on the first data object
+      updateStats(data[0]);
+
+      // New function to update the stats panel based on the marker's data
+      function updateStats(d) {
+        // Remove visible class from all stats in both statsBox and statsBox2
+        const statElements = document.querySelectorAll('#statsBox .title-transition, #statsBox2 .title-transition');
+        statElements.forEach(el => el.classList.remove('visible'));
+        
+        // Update values and add visible class back after a short delay
+        setTimeout(() => {
+          document.getElementById('parametersValue').textContent = d.parameters;
+          document.getElementById('flopsValue').textContent = d.flops;
+          document.getElementById('layersValue').textContent = d.layers;
+          document.getElementById('gpusValue').textContent = d.gpus;
+          document.getElementById('developerValue').textContent = d.developer;
+          
+          // Update the new stats for statsBox2
+          document.getElementById('speedValue').textContent = d.speed;
+          document.getElementById('apiPriceValue').textContent = d.apiPrice;
+          document.getElementById('trainingCostValue').textContent = d.trainingCost;
+          
+          statElements.forEach(el => el.classList.add('visible'));
+          
+          // Update the event title which will become the new originalTitle
+          const description = d3.select("#eventDescription");
+          description.text(d.event);
+        }, 200);
+      }
+
+      // Add this after the updateStats function
+      function initializeStatHovers() {
+        const description = d3.select("#eventDescription");
+        let originalTitle = '';
+
+        // Get all elements with cursor-pointer in the stats box
+        const statElements = document.querySelectorAll('#statsBox .cursor-pointer');
+        
+        statElements.forEach(element => {
+          element.addEventListener('mouseenter', function() {
+            // Store the original title if we haven't yet
+            if (!originalTitle) {
+              originalTitle = description.text();
+            }
+            
+            // Update the title with the stat name
+            description.classed("visible", false);
+            setTimeout(() => {
+              description.text(this.dataset.stat);
+              description.classed("visible", true);
+            }, 200);
+          });
+
+          element.addEventListener('mouseleave', function() {
+            // Restore the original title
+            description.classed("visible", false);
+            setTimeout(() => {
+              description.text(originalTitle);
+              description.classed("visible", true);
+            }, 200);
+          });
+        });
+      }
+
+      // Add this to the end of the script, after the initial render
+      initializeStatHovers();
+
+      // Updated function to smoothly blur/unblur markers using CSS class toggling
+      function highlightDeveloperMarkers(developer, highlight = true) {
+        if (highlight) {
+          // For the highlighted developer's markers: enlarge circles and set full opacity
+          svg.selectAll(".event")
+            .filter(d => d.developer === developer)
+            .select(".outer-circle")
+              .transition()
+              .duration(300)
+              .attr("r", 24)
+              .style("opacity", 1);
+          
+          svg.selectAll(".event")
+            .filter(d => d.developer === developer)
+            .select(".inner-circle")
+              .transition()
+              .duration(300)
+              .attr("r", 8)
+              .style("opacity", 1);
+          
+          // For non-highlighted markers, reduce opacity but keep selected ones more visible
+          svg.selectAll(".event")
+            .filter(d => d.developer !== developer)
+            .select(".outer-circle")
+              .transition()
+              .duration(300)
+              .attr("r", 18)
+              .style("opacity", d => selectedDevelopers.has(d.developer) ? 0.6 : 0.1);
+          
+          svg.selectAll(".event")
+            .filter(d => d.developer !== developer)
+            .select(".inner-circle")
+              .transition()
+              .duration(300)
+              .attr("r", 6)
+              .style("opacity", d => selectedDevelopers.has(d.developer) ? 0.6 : 0.1);
+          
+          // Add blur effect to non-highlighted markers
+          svg.selectAll(".event")
+            .filter(d => d.developer !== developer)
+            .classed("marker-blur", true);
+        } else {
+          // Remove highlighting and restore normal state
+          svg.selectAll(".event")
+            .classed("marker-blur", false);
+          
+          // Restore original appearance based on selection state
+          svg.selectAll(".event")
+            .each(function(d) {
+              const opacity = selectedDevelopers.has("All") ? 
+                calculateOpacity(d, data, x) : 
+                (selectedDevelopers.has(d.developer) ? 1 : 0.2);
+              
+              d3.select(this).select(".outer-circle")
+                .transition()
+                .duration(300)
+                .attr("r", 18)
+                .style("opacity", opacity);
+              
+              d3.select(this).select(".inner-circle")
+                .transition()
+                .duration(300)
+                .attr("r", 6)
+                .style("opacity", opacity);
+            });
+        }
+      }
+
+      // Set up button hover effects
+      const developerButtons = document.querySelectorAll('#developerButtons button');
+      developerButtons.forEach(button => {
+        const developer = button.textContent;
+        button.addEventListener('mouseenter', () => {
+          if (developer === 'All') {
+            currentHighlightedDeveloper = null;
+            highlightDeveloperMarkers(null, false);
+          } else {
+            currentHighlightedDeveloper = developer;
+            // Temporarily add this developer to selections during hover
+            const wasSelected = selectedDevelopers.has(developer);
+            if (!wasSelected) selectedDevelopers.add(developer);
+            highlightDeveloperMarkers(developer, true);
+            if (!wasSelected) selectedDevelopers.delete(developer);
+          }
+        });
+        
+        button.addEventListener('mouseleave', () => {
+          button.style.transform = 'scale(1)';
+          currentHighlightedDeveloper = null;
+          highlightDeveloperMarkers(developer, false);
+        });
+
+        // ---- New click handler for toggling the filter ----
+        button.addEventListener('click', function() {
+          const developer = button.textContent;
+          
+          if (developer === "All") {
+            // Clicking "All" clears other selections and selects only "All"
+            selectedDevelopers.clear();
+            selectedDevelopers.add("All");
+          } else {
+            // Remove "All" when selecting specific developers
+            selectedDevelopers.delete("All");
+            
+            // Toggle the clicked developer
+            if (selectedDevelopers.has(developer)) {
+              selectedDevelopers.delete(developer);
+              // If no developers selected, revert to "All"
+              if (selectedDevelopers.size === 0) {
+                selectedDevelopers.add("All");
+              }
+            } else {
+              selectedDevelopers.add(developer);
+            }
+          }
+          
+          // Update active state for all buttons
+          developerButtons.forEach(btn => {
+            btn.classList.toggle('developer-button-active', 
+              selectedDevelopers.has(btn.textContent));
+          });
+          
+          // Clear any temporary hover state
+          currentHighlightedDeveloper = null;
+          // Re-render the timeline
+          render();
+        });
+      });
+
+      // Add this line right after the script starts
+      addStyles();
+
+    </script>
+</body>
+</html>

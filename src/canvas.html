@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas Drawing</title>
+    <link href="./output.css" rel="stylesheet">
+    <style>
+        canvas {
+            touch-action: none; /* Prevent scrolling on touch devices */
+            display: block; /* Remove canvas margin */
+        }
+        body {
+            margin: 0;
+            overflow: hidden; /* Hide scrollbars */
+        }
+    </style>
+</head>
+<body>
+    <canvas id="drawCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('drawCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Set canvas to full viewport size
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Add fade effect
+        function fadeCanvas() {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.01)'; // Reduced fade rate to 2% per frame
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.globalCompositeOperation = 'source-over';
+            requestAnimationFrame(fadeCanvas);
+        }
+        fadeCanvas(); // Start the fade loop
+
+        // Drawing state
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+
+        // Configure drawing style
+        ctx.strokeStyle = 'rgba(135, 206, 235, 0.1)'; // Increased initial stroke opacity
+        ctx.lineWidth = 25; // Thick stroke
+        ctx.lineCap = 'round'; // Rounded line ends
+        ctx.lineJoin = 'round'; // Smooth line connections
+
+        // Get canvas coordinates from event
+        function getCanvasCoordinates(e) {
+            if (e.touches) {
+                return {
+                    x: e.touches[0].clientX - canvas.offsetLeft,
+                    y: e.touches[0].clientY - canvas.offsetTop
+                };
+            }
+            return {
+                x: e.clientX - canvas.offsetLeft,
+                y: e.clientY - canvas.offsetTop
+            };
+        }
+
+        // Start drawing
+        function startDrawing(e) {
+            isDrawing = true;
+            const pos = getCanvasCoordinates(e);
+            [lastX, lastY] = [pos.x, pos.y];
+            ctx.beginPath();
+        }
+
+        // Draw while moving
+        function draw(e) {
+            if (!isDrawing) return;
+            e.preventDefault();
+            
+            const pos = getCanvasCoordinates(e);
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+            [lastX, lastY] = [pos.x, pos.y];
+        }
+
+        // Stop drawing
+        function stopDrawing() {
+            isDrawing = false;
+            ctx.closePath();
+        }
+
+        // Mouse event listeners
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+
+        // Touch event listeners
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault(); // Prevent scrolling
+            startDrawing(e.touches[0]);
+        });
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault(); // Prevent scrolling
+            draw(e.touches[0]);
+        }, { passive: false });
+        canvas.addEventListener('touchend', stopDrawing);
+    </script>
+</body>
+</html>

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .floating-input {
+            position: absolute;
+            border: 1px solid #ccc;
+            padding: 8px;
+            min-width: 200px;
+            background: white;
+            border-radius: 4px;
+            outline: none;
+            color: #808080;
+            font-family: monospace;
+            font-size: 18px;
+            cursor: move;
+        }
+        .floating-input:focus {
+            border-color: #2196F3;
+            box-shadow: 0 0 4px rgba(33, 150, 243, 0.3);
+        }
+        .delete-btn {
+            position: absolute;
+            right: 4px;
+            top: 4px;
+            cursor: pointer;
+            color: #999;
+            font-size: 16px;
+            padding: 2px;
+            background: transparent;
+            border: none;
+        }
+        .delete-btn:hover {
+            color: #f44336;
+        }
+        .drag-tab {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            width: 20px;
+            height: 20px;
+            background: gray;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: move;
+            z-index: 10;
+        }
+        .input-container {
+            position: absolute;
+            display: inline-block;
+        }
+        #sidebar {
+            position: fixed;
+            right: 0;
+            top: 0;
+            width: 120px;
+            height: 100%;
+            background: #f5f5f5;
+            border-left: 1px solid #ccc;
+            padding: 10px;
+            overflow-y: hidden;
+            box-sizing: border-box;
+        }
+        #sidebar h3 {
+            margin-bottom: 20px;
+        }
+        #numberList {
+            list-style-type: none;
+            padding: 0;
+            white-space: normal;
+            word-wrap: break-word;
+            overflow: hidden;
+        }
+        #numberList li {
+            margin-bottom: 10px;
+            white-space: normal;
+            word-wrap: break-word;
+        }
+        #popup {
+            position: absolute;
+            background: #fff;
+            color: #000;
+            border: 1px solid #ccc;
+            padding: 5px;
+            border-radius: 4px;
+            display: none;
+            pointer-events: none;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <!-- New sidebar section -->
+    <div id="sidebar">
+        <h3>Numbers</h3>
+        <ul id="numberList"></ul>
+    </div>
+    
+    <!-- New popup for shift key -->
+    <div id="popup">Shift key pressed!</div>
+    
+    <script>
+        let mouseX = 0;
+        let mouseY = 0;
+        let isDragging = false;
+        let currentDraggable = null;
+        let offsetX = 0;
+        let offsetY = 0;
+        let textBoxCount = 0;
+
+        // Track mouse position
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            
+            // Update popup position if visible
+            const popup = document.getElementById('popup');
+            if (popup && popup.style.display === 'block') {
+                popup.style.left = mouseX + 'px';
+                popup.style.top = mouseY + 'px';
+            }
+            
+            // Handle dragging
+            if (isDragging && currentDraggable) {
+                currentDraggable.style.left = `${mouseX - offsetX}px`;
+                currentDraggable.style.top = `${mouseY - offsetY}px`;
+            }
+        });
+
+        // Create text box on spacebar press
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && !e.target.isContentEditable) {
+                const container = document.createElement('div');
+                container.className = 'input-container';
+                
+                const input = document.createElement('div');
+                input.className = 'floating-input';
+                input.contentEditable = true;
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.innerHTML = '×';
+                deleteBtn.onclick = () => container.remove();
+                
+                container.style.left = `${mouseX}px`;
+                container.style.top = `${mouseY}px`;
+                
+                // Create drag tab for moving the textbox
+                const dragTab = document.createElement('div');
+                dragTab.className = 'drag-tab';
+                dragTab.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    currentDraggable = container;
+                    const rect = container.getBoundingClientRect();
+                    offsetX = e.clientX - rect.left;
+                    offsetY = e.clientY - rect.top;
+                    // Disable content editing while dragging
+                    input.contentEditable = false;
+                    e.stopPropagation();
+                    e.preventDefault();
+                });
+                
+                container.appendChild(input);
+                container.appendChild(deleteBtn);
+                container.appendChild(dragTab);
+                document.body.appendChild(container);
+                
+                // Update the sidebar list with a new number
+                textBoxCount++;
+                const currentNumber = textBoxCount;
+                const li = document.createElement('li');
+                li.innerText = currentNumber;
+                document.getElementById('numberList').appendChild(li);
+                
+                // Append the first word from the textbox to the number in the list as soon as it is written.
+                input.addEventListener('input', () => {
+                    const words = input.textContent.trim().split(/\s+/);
+                    const firstWord = words[0] || "";
+                    li.innerText = currentNumber + (firstWord ? ": " + firstWord : "");
+                });
+                
+                setTimeout(() => input.focus(), 10);
+                
+                container.addEventListener('click', (ev) => {
+                    ev.stopPropagation();
+                });
+            }
+        });
+
+        // Stop dragging when mouse is released
+        document.addEventListener('mouseup', () => {
+            if (isDragging && currentDraggable) {
+                // Re-enable content editing after dragging
+                const input = currentDraggable.querySelector('.floating-input');
+                input.contentEditable = true;
+                // Focus the input after dragging
+                setTimeout(() => input.focus(), 10);
+            }
+            isDragging = false;
+            currentDraggable = null;
+        });
+
+        // Show popup when shift key is held down
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Shift') {
+                const popup = document.getElementById('popup');
+                popup.style.display = 'block';
+                popup.style.left = mouseX + 'px';
+                popup.style.top = mouseY + 'px';
+            }
+        });
+
+        // Hide popup when shift key is released
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'Shift') {
+                const popup = document.getElementById('popup');
+                popup.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

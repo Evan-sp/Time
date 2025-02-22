@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Drawable Canvas</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #fff;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+<script>
+    // Add SVG container alongside canvas
+    const svg = d3.select("body")
+        .append("svg")
+        .style("position", "absolute")
+        .style("top", "0")
+        .style("left", "0")
+        .style("pointer-events", "none")  // Allow events to pass through to canvas
+        .node();
+
+    const canvas = d3.select("body")
+        .append("canvas")
+        .node();
+    
+    const context = canvas.getContext("2d");
+    
+    // Set initial canvas size to window dimensions
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        d3.select(svg)
+            .attr("width", window.innerWidth)
+            .attr("height", window.innerHeight);
+    }
+    resize();
+    window.addEventListener("resize", resize);
+
+    // Drawing state
+    let isDrawing = false;
+    let points = [];  // Store all points in the current path
+
+    // Set line drawing style
+    context.strokeStyle = "rgba(135, 206, 235, 0.4)"; // Light blue with transparency
+    context.lineWidth = 30;
+    context.lineJoin = "round";
+    context.lineCap = "round";
+
+    // Mouse event handlers
+    function startDrawing(e) {
+        isDrawing = true;
+        points = [getPosition(e)];  // Initialize points array
+        context.beginPath();         // Start new path
+        context.moveTo(...points[0]);
+    }
+
+    function draw(e) {
+        if (!isDrawing) return;
+        const pos = getPosition(e);
+        points.push(pos);
+        
+        // Clear previous segment and redraw entire path
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.beginPath();
+        
+        // Draw smooth path through all points
+        context.moveTo(...points[0]);
+        for(let i = 1; i < points.length; i++) {
+            const [x1, y1] = points[i-1];
+            const [x2, y2] = points[i];
+            context.quadraticCurveTo(x1, y1, (x1 + x2)/2, (y1 + y2)/2);
+        }
+        context.stroke();
+    }
+
+    function stopDrawing() {
+        if (!isDrawing) return;
+        isDrawing = false;
+        context.closePath();
+
+        // Create SVG path data
+        let pathData = `M ${points[0][0]},${points[0][1]}`;
+        for(let i = 1; i < points.length; i++) {
+            const [x1, y1] = points[i-1];
+            const [x2, y2] = points[i];
+            pathData += ` Q ${x1},${y1} ${(x1 + x2)/2},${(y1 + y2)/2}`;
+        }
+
+        // Add permanent SVG path and animate the color
+        d3.select(svg)
+            .append("path")
+            .attr("d", pathData)
+            .style("stroke", "rgba(135, 206, 235, 0.4)")  // Start with light blue
+            .style("stroke-width", "30")
+            .style("stroke-linejoin", "round")
+            .style("stroke-linecap", "round")
+            .style("fill", "none")
+            .transition()
+            .duration(400)  // Transition over 400ms
+            .style("stroke", "rgba(30, 144, 255, 0.6)");  // Animate to darker blue
+
+        // Clear canvas and points array
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        points = [];
+    }
+
+    // Touch event handlers
+    function handleTouchStart(e) {
+        e.preventDefault();
+        startDrawing(e.touches[0]);
+    }
+
+    function handleTouchMove(e) {
+        e.preventDefault();
+        draw(e.touches[0]);
+    }
+
+    // Get position from either mouse or touch event
+    function getPosition(e) {
+        const rect = canvas.getBoundingClientRect();
+        return [
+            e.clientX - rect.left,
+            e.clientY - rect.top
+        ];
+    }
+
+    // Event listeners
+    canvas.addEventListener("mousedown", startDrawing);
+    canvas.addEventListener("mousemove", draw);
+    canvas.addEventListener("mouseup", stopDrawing);
+    canvas.addEventListener("mouseout", stopDrawing);
+    
+    canvas.addEventListener("touchstart", handleTouchStart);
+    canvas.addEventListener("touchmove", handleTouchMove);
+    canvas.addEventListener("touchend", stopDrawing);
+</script>
+</body>
+</html>

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Timeline</title>
+  <link href="./output.css" rel="stylesheet">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body class="bg-gray-100 text-gray-500 min-h-screen flex items-center justify-center font-thin">
+    <div class="container mx-auto flex flex-col justify-center items-center">
+        <button id="zoomOutBtn" 
+                class="mb-4 px-4 py-2 bg-blue-500 text-white rounded-lg opacity-0 pointer-events-none transition-opacity duration-500 hover:bg-blue-600">
+            Zoom Out
+        </button>
+        <div class="relative w-[85rem] py-16" id="timeline-container">
+        </div>
+        <div class="mt-4">
+          <p class="text-gray-500 text-sm">Time Unit: Seconds — — —</p>
+        </div>
+    </div>
+    <script>
+      // Data
+      const data = [
+        { event: "O1", position: 0,   time: 0  },
+        { event: "O3", position: 40,  time: 40 },
+        { event: "O4", position: 50,  time: 50 },
+        { event: "O4.1", position: 60,  time: 60 },
+        { event: "O4.2", position: 70,  time: 70 },
+        { event: "O4.3", position: 77,  time: 77 },
+        { event: "O4.4", position: 82,  time: 82 },
+        { event: "O2", position: 80,  time: 80 },
+        { event: "O2.5", position: 90, time: 90 },
+        { event: "O3.5", position: 95, time: 95 },
+        { event: "O5", position: 98, time: 98 },
+        { event: "O6", position: 98.5, time: 98.5 },
+        { event: "O7", position: 99, time: 99 },
+        { event: "O8", position: 99.5, time: 99.5 },
+        { event: "O30", position: 100, time: 100 }
+      ];
+
+      // Dimensions and settings
+      const width = 1360; // adjust as needed
+      const height = 300; // increased from 150 to 300
+      const margin = { left: 50, right: 50 };
+      const pixelDistance = 40; // Minimum pixel distance for full opacity
+      const hoverTransitionDuration = 400; // Duration for hover animations
+
+      // Keep track of domain history for zoom in/out
+      let xDomainStack = [[0, 100]];
+
+      // Reference to the Zoom Out button
+      const zoomOutBtn = document.getElementById('zoomOutBtn');
+
+      // Create an SVG inside the #timeline-container
+      const svg = d3.select("#timeline-container")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+      // Create horizontal scale, domain will be updated later
+      const x = d3.scaleLinear()
+        .domain(xDomainStack[0])
+        .range([margin.left, width - margin.right]);
+
+      // Add this function to calculate opacity based on proximity
+      function calculateOpacity(currentPoint, allPoints, scale) {
+        const currentX = scale(currentPoint.position);
+        
+        // Count how many points are within pixelDistance
+        const nearbyPoints = allPoints.filter(p => {
+          const pX = scale(p.position);
+          return Math.abs(pX - currentX) < pixelDistance && p !== currentPoint;
+        });
+
+        // More nearby points = more transparent
+        return Math.max(0.2, 1 - (nearbyPoints.length * 0.2));
+      }
+
+      // A helper function to draw or re-draw the timeline
+      function render(transitionDuration = 750) {
+        const currentDomain = xDomainStack[xDomainStack.length - 1];
+        x.domain(currentDomain);
+
+        // Update the main timeline line
+        svg.selectAll(".timeline-line")
+          .data([null]) // just one line
+          .join("line")
+          .attr("class", "timeline-line")
+          .transition().duration(transitionDuration)
+          .attr("x1", x.range()[0])
+          .attr("y1", height / 2)
+          .attr("x2", x.range()[1])
+          .attr("y2", height / 2)
+          .attr("stroke-dasharray", "6,4")
+          .attr("stroke", "#D1D5DB")  // Changed from "gray" to a lighter gray
+          .attr("stroke-width", 2);
+
+        // Bind data to groups
+        const group = svg.selectAll(".event")
+          .data(data, d => d.event)
+          .join("g")
+          .attr("class", "event");
+
+        // Transition each group to new positions
+        group
+          .transition().duration(transitionDuration)
+          .attr("transform", d => `translate(${x(d.position)}, ${height / 2})`);
+
+        // Outer circle
+        group.selectAll(".outer-circle")
+          .data(d => [d])
+          .join("circle")
+          .attr("class", "outer-circle")
+          .attr("r", 12)
+          .attr("fill", "rgba(59, 130, 246, 0.2)")
+          .transition().duration(transitionDuration)
+          .style("opacity", d => {
+            if (d.position < currentDomain[0]) return 0;
+            return calculateOpacity(d, data, x);
+          });
+
+        // Inner circle
+        group.selectAll(".inner-circle")
+          .data(d => [d])
+          .join("circle")
+          .attr("class", "inner-circle")
+          .attr("r", 4)
+          .attr("fill", "#3b82f6")
+          .transition().duration(transitionDuration)
+          .style("opacity", d => {
+            if (d.position < currentDomain[0]) return 0;
+            return calculateOpacity(d, data, x);
+          });
+
+        // Add hover effects to the groups
+        group
+          .on("mouseenter", function() {
+            // Increase size of circles on hover
+            d3.select(this).select(".outer-circle")
+              .transition()
+              .duration(hoverTransitionDuration)
+              .attr("r", 16);
+            
+            d3.select(this).select(".inner-circle")
+              .transition()
+              .duration(hoverTransitionDuration)
+              .attr("r", 6);
+          })
+          .on("mouseleave", function() {
+            // Return to original size
+            d3.select(this).select(".outer-circle")
+              .transition()
+              .duration(hoverTransitionDuration)
+              .attr("r", 12);
+            
+            d3.select(this).select(".inner-circle")
+              .transition()
+              .duration(hoverTransitionDuration)
+              .attr("r", 4);
+          });
+
+        // Calculate vertical offsets for labels to avoid overlap
+        const labelSpacing = 20; // Increased from 15 to 20
+        const labelHeight = 20; // Increased from 15 to 20
+        
+        // Sort data points by x position
+        const sortedData = [...data].sort((a, b) => a.position - b.position);
+        const labelPositions = new Map();
+
+        // Calculate vertical positions
+        sortedData.forEach((d, i) => {
+          if (i === 0) {
+            labelPositions.set(d.event, -labelHeight);
+            return;
+          }
+
+          const prevPoint = sortedData[i - 1];
+          const currentX = x(d.position);
+          const prevX = x(prevPoint.position);
+          const prevY = labelPositions.get(prevPoint.event);
+
+          // Check if labels would overlap
+          if (currentX - prevX < 30) { // Adjust this value based on your needs
+            // Place this label higher than the previous one
+            labelPositions.set(d.event, prevY - labelSpacing);
+          } else {
+            // Reset to base height if no overlap
+            labelPositions.set(d.event, -labelHeight);
+          }
+        });
+
+        // Add vertical connecting lines - only for raised labels
+        group.selectAll(".connecting-line")
+          .data(d => [d])
+          .join("line")
+          .attr("class", "connecting-line")
+          .transition().duration(transitionDuration)
+          .attr("x1", 0)
+          .attr("y1", d => labelPositions.get(d.event) + 5)  // Start 5px below the label
+          .attr("x2", 0)
+          .attr("y2", -14)  // Changed from -5 to -14 to stop before outer circle
+          .attr("stroke", "#9CA3AF")  // Light gray color
+          .attr("stroke-width", 1)
+          .style("opacity", d => {
+            // Only show line if label is raised above default position
+            return labelPositions.get(d.event) < -labelHeight ? 0.5 : 0;
+          });
+
+        // Label above the circle with calculated offset
+        group.selectAll(".label-event")
+          .data(d => [d])
+          .join("text")
+          .attr("class", "label-event")
+          .attr("text-anchor", "middle")
+          .transition().duration(transitionDuration)
+          .attr("y", d => labelPositions.get(d.event))
+          .style("fill", "#374151")
+          .text(d => d.event);
+
+        // Time label, moved below the marker
+        group.selectAll(".label-time")
+          .data(d => [d])
+          .join("text")
+          .attr("class", "label-time")
+          .attr("y", 30)
+          .attr("text-anchor", "middle")
+          .style("font-size", "0.75rem")
+          .style("fill", "#374151")
+          .text(d => d.time + "s")
+          .transition().duration(transitionDuration)
+          .style("opacity", d => {
+            if (d.position < currentDomain[0]) return 0;
+            return calculateOpacity(d, data, x);
+          });
+
+        // We add click handlers to each group's circles
+        group.on("click", (event, d) => zoomToEvent(d));
+      }
+
+      function zoomToEvent(d) {
+        // Save current domain
+        const lastDomain = xDomainStack[xDomainStack.length - 1];
+        xDomainStack.push([d.position, lastDomain[1]]);
+
+        // Show zoom out button
+        zoomOutBtn.style.opacity = '1';
+        zoomOutBtn.style.pointerEvents = 'auto';
+
+        // Re-render with new domain
+        render();
+      }
+
+      function zoomOut() {
+        // If there's nothing to revert, do nothing
+        if (xDomainStack.length <= 1) return;
+
+        // Pop last domain (the current one)
+        xDomainStack.pop();
+
+        // If we're fully back, hide the button
+        if (xDomainStack.length === 1) {
+          zoomOutBtn.style.opacity = '0';
+          zoomOutBtn.style.pointerEvents = 'none';
+        }
+
+        // Re-render with the previous domain
+        render();
+      }
+
+      // Attach zoomOut to the button
+      zoomOutBtn.addEventListener("click", zoomOut);
+
+      // Initial render
+      render();
+    </script>
+</body>
+</html>

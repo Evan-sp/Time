@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gravity Circle</title>
+    <link href="./output.css" rel="stylesheet">
+</head>
+<body class="flex items-center justify-center h-screen">
+    <div id="ball" class="w-8 h-8 bg-sky-500 rounded-full absolute" style="top: 50%"></div>
+
+    <script>
+        const ball = document.getElementById('ball');
+        let velocity = 0;
+        let posY = ball.getBoundingClientRect().top;
+        let isAnimating = true;
+
+        function update() {
+            if (!isAnimating) return;
+
+            // Apply gravity
+            velocity += 0.5;
+            posY += velocity;
+            
+            // Bottom boundary detection
+            if (posY > window.innerHeight - 32) {
+                posY = window.innerHeight - 32;
+                velocity *= -0.8; // Bounce with energy loss
+                
+                // Stop animation when barely moving
+                if (Math.abs(velocity) < 0.5) {
+                    isAnimating = false;
+                }
+            }
+
+            ball.style.top = `${posY}px`;
+            requestAnimationFrame(update);
+        }
+
+        // Start animation
+        update();
+    </script>
+</body>
+</html>

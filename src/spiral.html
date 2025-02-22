@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spiral</title>
+    <link href="./output.css" rel="stylesheet">
+    <style>
+        @keyframes spin {
+            from {
+                transform: translate(-50%, -50%) rotate(0deg);
+            }
+            to {
+                transform: translate(-50%, -50%) rotate(360deg);
+            }
+        }
+        .spin-slow {
+            animation: spin 8s linear infinite;
+        }
+        
+        /* Add new spin classes with different speeds */
+        .spin-medium {
+            animation: spin 6s linear infinite;
+        }
+        
+        .spin-fast {
+            animation: spin 4s linear infinite;
+        }
+
+        .raindrop {
+            position: fixed;
+            width: 2.5px;
+            height: 25px;
+            background: linear-gradient(transparent, #6B46C1);
+            animation: rain linear infinite;
+            opacity: 0.7;
+        }
+
+        @keyframes rain {
+            0% {
+                transform: translateY(-100vh);
+            }
+            100% {
+                transform: translateY(100vh);
+            }
+        }
+
+        /* Create multiple raindrops with different positions, sizes and animation durations */
+        .raindrop:nth-child(1) { left: 5%; animation-duration: 1.5s; height: 35px; }
+        .raindrop:nth-child(2) { left: 10%; animation-duration: 1.8s; height: 30px; }
+        .raindrop:nth-child(3) { left: 15%; animation-duration: 1.6s; height: 32px; }
+        .raindrop:nth-child(4) { left: 20%; animation-duration: 1.4s; height: 28px; }
+        .raindrop:nth-child(5) { left: 25%; animation-duration: 1.7s; height: 38px; }
+        .raindrop:nth-child(6) { left: 30%; animation-duration: 1.5s; height: 33px; }
+        .raindrop:nth-child(7) { left: 35%; animation-duration: 1.9s; height: 31px; }
+        .raindrop:nth-child(8) { left: 40%; animation-duration: 1.6s; height: 36px; }
+        .raindrop:nth-child(9) { left: 45%; animation-duration: 1.8s; height: 34px; }
+        .raindrop:nth-child(10) { left: 50%; animation-duration: 1.7s; height: 29px; }
+        .raindrop:nth-child(11) { left: 55%; animation-duration: 1.4s; height: 37px; }
+        .raindrop:nth-child(12) { left: 60%; animation-duration: 1.8s; height: 32px; }
+        .raindrop:nth-child(13) { left: 65%; animation-duration: 1.6s; height: 35px; }
+        .raindrop:nth-child(14) { left: 70%; animation-duration: 1.5s; height: 30px; }
+        .raindrop:nth-child(15) { left: 75%; animation-duration: 1.9s; height: 36px; }
+        .raindrop:nth-child(16) { left: 80%; animation-duration: 1.7s; height: 33px; }
+        .raindrop:nth-child(17) { left: 85%; animation-duration: 1.5s; height: 31px; }
+        .raindrop:nth-child(18) { left: 90%; animation-duration: 1.8s; height: 34px; }
+        .raindrop:nth-child(19) { left: 95%; animation-duration: 1.6s; height: 38px; }
+        .raindrop:nth-child(20) { left: 98%; animation-duration: 1.7s; height: 35px; }
+    </style>
+</head>
+<body class="bg-gray-100 h-screen">
+    <!-- Add raindrops container before the main content -->
+    <div class="fixed inset-0 pointer-events-none">
+        <div class="raindrop"></div>
+        <div class="raindrop"></div>
+        <div class="raindrop"></div>
+        <div class="raindrop"></div>
+        <div class="raindrop"></div>
+        <div class="raindrop"></div>
+        <div class="raindrop"></div>
+        <div class="raindrop"></div>
+        <div class="raindrop"></div>
+        <div class="raindrop"></div>
+        <div class="raindrop"></div>
+        <div class="raindrop"></div>
+        <div class="raindrop"></div>
+        <div class="raindrop"></div>
+        <div class="raindrop"></div>
+        <div class="raindrop"></div>
+        <div class="raindrop"></div>
+        <div class="raindrop"></div>
+        <div class="raindrop"></div>
+        <div class="raindrop"></div>
+        <div class="raindrop"></div>
+        <div class="raindrop"></div>
+    </div>
+
+    <div class="h-full container mx-auto flex flex-col justify-center items-center relative">
+        <div class="absolute top-1/2 left-1/2 w-96 h-96 border-4 border-purple-200 rounded-full z-0 spin-slow"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-gray-300 rounded-full z-5"></div>
+        
+        <div class="absolute top-1/2 left-1/2 w-[400px] h-[400px] spin-slow">
+            <div class="grid grid-cols-2 gap-40 transform rotate-45 relative z-10 h-full">
+                <div class="h-full flex justify-center items-center">
+                    <div class="bg-purple-400 hover:bg-purple-300 transition-colors duration-200 w-10 h-10 rounded-full relative spin-medium">
+                        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-purple-600 w-6 h-6 rounded-full spin-fast">
+                            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gray-300 w-2 h-2 rounded-full"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="h-full flex justify-center items-center">
+                    <div class="bg-purple-400 hover:bg-purple-300 transition-colors duration-200 w-10 h-10 rounded-full relative spin-fast">
+                        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-purple-600 w-6 h-6 rounded-full spin-medium">
+                            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gray-300 w-2 h-2 rounded-full"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="h-full flex justify-center items-center">
+                    <div class="bg-purple-400 hover:bg-purple-300 transition-colors duration-200 w-10 h-10 rounded-full relative spin-medium">
+                        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-purple-600 w-6 h-6 rounded-full spin-fast">
+                            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gray-300 w-2 h-2 rounded-full"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="h-full flex justify-center items-center">
+                    <div class="bg-purple-400 hover:bg-purple-300 transition-colors duration-200 w-10 h-10 rounded-full relative spin-fast">
+                        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-purple-600 w-6 h-6 rounded-full spin-medium">
+                            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gray-300 w-2 h-2 rounded-full"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

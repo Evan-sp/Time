@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Timeline</title>
+  <link href="./output.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 text-gray-900 min-h-screen flex items-center justify-center">
+    <style>
+      @keyframes growShrink {
+        0%, 100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.5);
+        }
+      }
+    </style>
+    <div class="relative flex items-center justify-center w-40 h-40">
+      <div class="absolute inset-0 rounded-full border border-gray-300" style="animation: growShrink 3s ease-in-out infinite;"></div>
+      <p class="font-thin text-6xl relative z-10 transition-transform duration-300">Hello.</p>
+    </div>
+    
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        const textEl = document.querySelector('p.font-thin');
+        textEl.addEventListener('mousemove', function(e) {
+          const rect = this.getBoundingClientRect();
+          const xPos = e.clientX - rect.left;
+          const rotation = xPos < rect.width / 2 ? -15 : 15;
+          this.style.transform = `rotate(${rotation}deg)`;
+        });
+        textEl.addEventListener('mouseleave', function() {
+          this.style.transform = 'rotate(0deg)';
+        });
+      });
+    </script>
+</body>
+</html>

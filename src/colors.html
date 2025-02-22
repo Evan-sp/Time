@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Black Circle Page</title>
+  <link href="./output.css" rel="stylesheet">
+  <style>
+    /* Define keyframe animation for growing and shrinking */
+    @keyframes grow-shrink {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.5);
+      }
+    }
+    /* Apply the grow-shrink animation */
+    .animate-grow-shrink {
+      animation: grow-shrink 2s ease-in-out infinite;
+    }
+
+    /* Define keyframe animation for orbiting */
+    @keyframes orbit {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Apply the orbit animation */
+    .animate-orbit {
+      animation: orbit 4s linear infinite;
+    }
+
+    /* === New: Define keyframe animation for creative spin with a twist effect === */
+    @keyframes creative-spin {
+      0%, 100% {
+        transform: rotate(0deg) translateX(8rem) rotate(0deg);
+      }
+      50% {
+        transform: rotate(180deg) translateX(8rem) rotate(-180deg);
+      }
+    }
+
+    /* === New: Apply the creative spin animation === */
+    .animate-creative-spin {
+      animation: creative-spin 5s linear infinite;
+    }
+
+    /* === New: Define keyframe animation for pulsating ring === */
+    @keyframes pulse-ring {
+      0% {
+        transform: scale(0.8);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(1.8);
+        opacity: 0;
+      }
+    }
+
+    /* === New: Apply the pulse ring animation === */
+    .animate-pulse-ring {
+      animation: pulse-ring 3s ease-out infinite;
+    }
+
+    /* === New: Apply the reverse creative spin animation === */
+    .animate-creative-spin-reverse {
+      animation: creative-spin 7s linear infinite reverse;
+    }
+
+    /* === New: Define keyframe animation for left bounce upward effect === */
+    @keyframes bounce-up-left {
+      0% {
+        transform: translateX(-8rem) translateY(0);
+      }
+      50% {
+        transform: translateX(-8rem) translateY(-2rem);
+      }
+      70% {
+        transform: translateX(-8rem) translateY(-1rem);
+      }
+      100% {
+        transform: translateX(-8rem) translateY(0);
+      }
+    }
+
+    /* === New: Apply the left bounce upward animation === */
+    .animate-bounce-up-left {
+      animation: bounce-up-left 2s ease-in-out infinite;
+    }
+
+    /* === New: Define keyframe animation for floating emoji effect === */
+    @keyframes float {
+      0% {
+        transform: translateY(0);
+        opacity: 1;
+      }
+      50% {
+        transform: translateY(-20px);
+        opacity: 0.7;
+      }
+      100% {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    /* === New: Apply the floating emoji animation === */
+    .floating-emoji {
+      animation: float 4s ease-in-out infinite;
+      font-size: 2rem;
+    }
+
+    /* === New: Define keyframe animation for floating title effect === */
+    @keyframes title-float {
+      0% {
+        transform: translateY(0);
+        opacity: 1;
+      }
+      50% {
+        transform: translateY(-10px);
+        opacity: 0.8;
+      }
+      100% {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    /* === New: Apply the floating title animation === */
+    .floating-title {
+      animation: title-float 6s ease-in-out infinite;
+      font-size: 3rem;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body class="bg-neutral-700 flex items-center justify-center h-screen">
+<!-- === New: Floating Title Above the Circles === -->
+<div class="absolute pointer-events-none self-start">
+    <div class="floating-title text-neutral-900 font-mono mt-32">
+        H
+        <span class="text-blue-200">e</span>ll<span class="text-blue-500">o</span>
+    </div>
+</div>
+  <!-- Use a relatively positioned container for proper stacking -->
+  <div class="relative flex items-center justify-center">
+
+    <!-- === New: Pulsating outer ring with fading effect === -->
+    <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+      <div class="w-60 h-60 border border-neutral-500 rounded-full animate-pulse-ring"></div>
+    </div>
+    <!-- Outer static circle (ring) -->
+    <div class="w-52 h-52 border border-neutral-800 rounded-full flex items-center justify-center">
+        <div class="w-32 h-32 border border-neutral-800 rounded-full flex items-center justify-center">
+        <!-- Animated inner black circle -->
+        <div class="w-20 h-20 bg-neutral-800 rounded-full animate-grow-shrink"></div>
+        </div>
+    </div>
+    <!-- Rotating orbiting circle -->
+    <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+      <div class="animate-orbit">
+        <div class="w-4 h-4 bg-neutral-800 rounded-full" style="transform: translateX(6.5rem);"></div>
+      </div>
+    </div>
+    <!-- === New: Creative spinning animated element with twist effect === -->
+    <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+      <div class="animate-creative-spin">
+        <div class="w-3 h-3 bg-neutral-600 rounded-full" style="transform: translateX(8rem);"></div>
+      </div>
+    </div>
+    <!-- === New: Reverse creative spinning animated element === -->
+    <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+      <div class="animate-creative-spin-reverse">
+        <div class="w-2 h-2 bg-neutral-400 rounded-full" style="transform: translateX(7rem);"></div>
+      </div>
+    </div>
+    <!-- === New: Left bouncing upward animated element === -->
+    <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+      <div class="animate-bounce-up-left">
+        <div class="w-2 h-2 bg-neutral-300 rounded-full"></div>
+      </div>
+    </div>
+    <!-- === New: Floating Emojis === -->
+    <div class="absolute pointer-events-none" style="top: 50%; left: -60%; transform: translateY(-50%);">
+      <div class="floating-emoji">✨</div>
+    </div>
+    <div class="absolute pointer-events-none" style="top: 50%; right: -60%; transform: translateY(-50%);">
+      <div class="floating-emoji">🌟</div>
+    </div>
+    
+    <!-- === New: Minecraft Diamond Sword in the middle === -->
+    <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-50">
+        <svg class="w-18 h-18" viewBox="0 0 50 100" xmlns="http://www.w3.org/2000/svg">
+        <!-- Sword Blade -->
+        <polygon points="25,2 32,25 28,55 22,55 18,25" fill="#60a5fa" stroke="#3b82f6" stroke-width="1"/>
+        <!-- Sword Guard -->
+        <rect x="12" y="55" width="26" height="4" fill="#e5e7eb"/>
+        <!-- Sword Handle -->
+        <rect x="22" y="59" width="6" height="20" fill="#4b5563"/>
+        <!-- Sword Pommel -->
+        <circle cx="25" cy="81" r="2" fill="#4b5563"/>
+        </svg>
+    </div>
+</body>
+</html>

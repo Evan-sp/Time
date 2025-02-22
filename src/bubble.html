@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bubbles</title>
+    <link href="./output.css" rel="stylesheet">
+</head>
+<body class="bg-blue-800 min-h-screen w-screen relative">
+    <!-- Search Box added above all components -->
+    <input type="search" placeholder="Search..." 
+           class="absolute top-4 text-blue-300 left-1/2 transform -translate-x-1/2 w-3/4 p-4 text-3xl rounded-lg shadow-lg" />
+
+    <!-- SVG container for the pie chart -->
+    <svg class="absolute top-1/2 right-0 transform -translate-y-1/2" id="pie-chart" width="600" height="600"></svg>
+
+    <!-- SVG container for the bubble chart -->
+    <svg class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" id="bubble-chart" width="600" height="600"></svg>
+    
+    <!-- Load D3.js -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script>
+        // Sample data for the bubble chart
+        const data = {
+            children: [
+                { name: "A", value: 100 },
+                { name: "B", value: 200 },
+                { name: "C", value: 150 },
+                { name: "D", value: 80 },
+                { name: "E", value: 120 }
+            ]
+        };
+
+        const width = 600;
+        const height = 600;
+
+        // Select the SVG container
+        const svg = d3.select("#bubble-chart");
+
+        // Create a hierarchy and compute the sum of values
+        const root = d3.hierarchy(data)
+            .sum(d => d.value)
+            .sort((a, b) => b.value - a.value);
+
+        // Create a pack layout with the specified size and padding
+        const packLayout = d3.pack()
+            .size([width, height])
+            .padding(10);
+
+        // Apply the pack layout to compute positions and radii for each bubble
+        const nodes = packLayout(root).leaves();
+
+        // Create groups for each node to position them properly
+        const node = svg.selectAll("g")
+            .data(nodes)
+            .enter()
+            .append("g")
+            .attr("transform", d => `translate(${d.x}, ${d.y})`);
+
+        // Append circles for each bubble with hover effects
+        node.append("circle")
+            .attr("r", d => d.r)
+            .attr("fill", (d, i) => {
+                if (d.data.name === "B") {
+                    return "#9370db"; // Medium purple for bubble B (changed from red)
+                } else if (d.data.name === "C") {
+                    return "#3cb371"; // Medium sea green for bubble C
+                } else if (d.data.name === "E") {
+                    return "#ffa500"; // Orange for bubble E
+                } else {
+                    return d3.interpolateBlues(i / nodes.length);
+                }
+            })
+            .attr("fill-opacity", d => d.data.name === "E" ? 0.3 : 0.6)
+            .attr("data-name", d => d.data.name)
+            .on("mouseover", function(event, d) {
+                d3.select(this)
+                  .transition()
+                  .duration(200)
+                  .attr("r", d.r * 1.2);
+                // Highlight corresponding pie slice
+                d3.select(`#pie-chart path[data-name='${d.data.name}']`)
+                    .transition()
+                    .duration(200)
+                    .attr("fill-opacity", 1)
+                    .attr("stroke", "#fff")
+                    .attr("stroke-width", 2);
+            })
+            .on("mouseout", function(event, d) {
+                d3.select(this)
+                  .transition()
+                  .duration(200)
+                  .attr("r", d.r);
+                // Remove highlight from corresponding pie slice
+                d3.select(`#pie-chart path[data-name='${d.data.name}']`)
+                    .transition()
+                    .duration(200)
+                    .attr("fill-opacity", 0.6)
+                    .attr("stroke", "none");
+            });
+
+        // Append text labels for each bubble
+        node.append("text")
+            .attr("text-anchor", "middle")
+            .attr("dy", ".3em")
+            .attr("font-size", d => Math.min(2 * d.r / d.data.name.length, 20))
+            .attr("fill", "white")
+            .text(d => d.data.name);
+
+        // --- Pie Chart Code ---
+        // Use bubble chart's children data to represent each bubble and its size
+        const pieData = data.children;
+
+        const pieWidth = 300,
+              pieHeight = 300,
+              radius = Math.min(pieWidth, pieHeight) / 2;
+
+        // Create a pie generator
+        const pie = d3.pie()
+              .value(d => d.value);
+
+        // Create an arc generator
+        const arc = d3.arc()
+              .innerRadius(0)
+              .outerRadius(radius - 10);
+
+        // Append a group to center the pie chart in its SVG container
+        const pieSvg = d3.select("#pie-chart")
+              .attr("width", pieWidth)
+              .attr("height", pieHeight)
+              .append("g")
+              .attr("transform", `translate(${pieWidth / 2}, ${pieHeight / 2})`);
+
+        // Bind data and generate the arcs for the pie chart
+        const arcData = pie(pieData);
+
+        const arcs = pieSvg.selectAll(".arc")
+              .data(arcData)
+              .enter()
+              .append("g")
+              .attr("class", "arc");
+
+        // Append path elements (pie slices)
+        arcs.append("path")
+              .attr("d", arc)
+              .attr("fill", (d, i) => d3.schemeCategory10[i % 10])
+              .attr("fill-opacity", 0.6)
+              .attr("data-name", d => d.data.name)
+              .on("mouseover", function(event, d) {
+                  d3.select(this)
+                      .transition()
+                      .duration(200)
+                      .attr("fill-opacity", 1)
+                      .attr("stroke", "#fff")
+                      .attr("stroke-width", 2);
+                  // Highlight corresponding bubble
+                  d3.select(`#bubble-chart circle[data-name='${d.data.name}']`)
+                      .transition()
+                      .duration(200)
+                      .attr("r", function() {
+                          // Multiply original radius by 1.2 for highlight
+                          return d3.select(this).datum().r * 1.2;
+                      });
+              })
+              .on("mouseout", function(event, d) {
+                  d3.select(this)
+                      .transition()
+                      .duration(200)
+                      .attr("fill-opacity", 0.6)
+                      .attr("stroke", "none");
+                  // Remove highlight from corresponding bubble
+                  d3.select(`#bubble-chart circle[data-name='${d.data.name}']`)
+                      .transition()
+                      .duration(200)
+                      .attr("r", function() {
+                          return d3.select(this).datum().r;
+                      });
+              });
+
+        // Append text labels to each slice
+        arcs.append("text")
+              .attr("transform", d => `translate(${arc.centroid(d)})`)
+              .attr("text-anchor", "middle")
+              .attr("fill", "white")
+              .attr("font-size", "16px")
+              .text(d => d.data.name);
+    </script>
+</body>
+</html>

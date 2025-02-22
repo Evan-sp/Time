@@ -2,7 +2,12 @@
 module.exports = {
   content: ["./src/**/*.{html,js}"],
   theme: {
-    extend: {},
+    extend: {
+      scale: {
+        '200': '2',
+      },
+    },
   },
   plugins: [],
+  mode: 'jit'
 } 
