@@ -60,6 +60,22 @@
     .developer-button-active:hover::after {
       opacity: 0.7;
     }
+
+    /* Add these styles after your existing styles in the <style> section */
+    .label-event {
+      transition: opacity 300ms ease-in-out;
+      opacity: 0.7; /* Default semi-transparent state for all labels */
+    }
+
+    .event:hover .label-event {
+      opacity: 1 !important; /* Force full opacity on hover */
+      z-index: 10; /* Bring to front */
+    }
+
+    /* Styling for overlapping labels */
+    .label-overlap {
+      opacity: 0.5; /* More transparent when identified as overlapping */
+    }
   </style>
 </head>
 <body class="bg-gray-100 text-gray-500 max-h-screen p-8 flex flex-col items-center font-thin relative">
@@ -164,7 +180,7 @@
                     </div>
                 </div>
             </div>
-            <div class="mt-10 w-[79rem] flex flex-col justify-center items-center border-0 border-gray-200 bg-gray-200/0 rounded-2xl">
+            <div class="mt-2 w-[79rem] flex flex-col justify-center items-center border-0 border-gray-200 bg-gray-200/0 rounded-2xl">
                 <div class="flex w-full items-center">
                     <div id="zoomOutContainer" style="width: 0; opacity: 0; overflow: hidden; pointer-events: none; transition: width 500ms, opacity 500ms;">
                         <button id="zoomOutBtn" 
@@ -173,19 +189,19 @@
                         </button>
                     </div>
                     <div id="zoomButtonsContainer" class="flex gap-4 transition-all duration-500 bg-gray-200/80 rounded-2xl w-fit p-3">
-                        <button id="zoom30Btn" class="px-3 py-1.5 bg-blue-300 text-white font-semibold rounded-lg transition-all duration-500 hover:bg-blue-400">
+                        <button id="zoom30Btn" class="px-2 py-1 bg-blue-300 text-white font-semibold rounded-lg transition-all duration-500 hover:bg-blue-400">
                             Q1 2023
                         </button>
-                        <button id="zoom60Btn" class="px-3 py-1.5 bg-blue-300 text-white font-semibold rounded-lg transition-all duration-500 hover:bg-blue-400">
+                        <button id="zoom60Btn" class="px-2 py-1 bg-blue-300 text-white font-semibold rounded-lg transition-all duration-500 hover:bg-blue-400">
                             Q2 2023
                         </button>
-                        <button id="zoom75Btn" class="px-3 py-1.5 bg-blue-300 text-white font-semibold rounded-lg transition-all duration-500 hover:bg-blue-400">
+                        <button id="zoom75Btn" class="px-2 py-1 bg-blue-300 text-white font-semibold rounded-lg transition-all duration-500 hover:bg-blue-400">
                             Q3 2023
                         </button>
-                        <button id="zoom90Btn" class="px-3 py-1.5 bg-blue-300 text-white font-semibold rounded-lg transition-all duration-500 hover:bg-blue-400">
+                        <button id="zoom90Btn" class="px-2 py-1 bg-blue-300 text-white font-semibold rounded-lg transition-all duration-500 hover:bg-blue-400">
                             Q4 2023
                         </button>
-                        <button id="zoom95Btn" class="px-3 py-1.5 bg-blue-300 text-white font-semibold rounded-lg transition-all duration-500 hover:bg-blue-400">
+                        <button id="zoom95Btn" class="px-2 py-1 bg-blue-300 text-white font-semibold rounded-lg transition-all duration-500 hover:bg-blue-400">
                             Q1 2024
                         </button>
                     </div>
@@ -209,7 +225,7 @@
 
       // Dimensions and settings
       const width = 1264; // keep the same
-      const height = 250; // keep the same
+      const height = 400; // keep the same
       const margin = { left: 50, right: 50 }; // keep the same
       const pixelDistance = 50; // increased from 40 to 50 to account for larger markers
       const hoverTransitionDuration = 400; // Duration for hover animations
@@ -331,7 +347,7 @@
           .attr("class", "outer-circle")
           .attr("fill", d => developerColors[d.developer].bg)
           .transition().duration(duration)
-          .attr("r", 18) // shrunk back to original
+          .attr("r", 24) // increased from 18
           .style("opacity", d => getMarkerOpacity(d));
 
         // Update inner circle size
@@ -341,70 +357,18 @@
           .attr("class", "inner-circle")
           .attr("fill", d => developerColors[d.developer].fill)
           .transition().duration(duration)
-          .attr("r", 6) // shrunk back to original
+          .attr("r", 8) // increased from 6
           .style("opacity", d => getMarkerOpacity(d));
-
-        // Update hover effects sizes
-        group
-          .on("mouseenter", function(event, d) {
-            updateStats(d);
-  
-            const description = d3.select("#eventDescription");
-            description.classed("visible", false);  // Start transition out
-            
-            setTimeout(() => {
-              description.text(d.event);
-              description.classed("visible", true);  // Transition in
-            }, 200);
-  
-            d3.select(this).select(".outer-circle")
-              .transition()
-              .duration(hoverTransitionDuration)
-              .attr("r", 24)
-              .style("opacity", 1);
-            
-            d3.select(this).select(".inner-circle")
-              .transition()
-              .duration(hoverTransitionDuration)
-              .attr("r", 8)
-              .style("opacity", 1);
-
-            // Make the date fully visible
-            d3.select(this).select(".label-time")
-              .transition()
-              .duration(hoverTransitionDuration)
-              .style("opacity", 1);
-          })
-          .on("mouseleave", function(event, d) {
-            // Restore both the marker size and its calculated opacity
-            d3.select(this).select(".outer-circle")
-              .transition()
-              .duration(hoverTransitionDuration)
-              .attr("r", 18)
-              .style("opacity", getMarkerOpacity(d));
-  
-            d3.select(this).select(".inner-circle")
-              .transition()
-              .duration(hoverTransitionDuration)
-              .attr("r", 6)
-              .style("opacity", getMarkerOpacity(d));
-
-            // Restore the date's original opacity based on overlap
-            d3.select(this).select(".label-time")
-              .transition()
-              .duration(hoverTransitionDuration)
-              .style("opacity", 1);
-          });
 
         // Calculate vertical offsets for labels to avoid overlap
         const labelSpacing = 30; // Spacing remains the same
-        const labelHeight = 30; // Raised from 20 to 40 to move labels further up
-        
+        const labelHeight = 30; // Height value
+
         // Sort data points by x position
         const sortedData = [...data].sort((a, b) => a.position - b.position);
         const labelPositions = new Map();
 
-        // Calculate vertical positions for the event (upper) labels
+        // Calculate vertical positions
         sortedData.forEach((d, i) => {
           if (i === 0) {
             labelPositions.set(d.event, -labelHeight);
@@ -416,37 +380,13 @@
           const prevX = x(prevPoint.position);
           const prevY = labelPositions.get(prevPoint.event);
 
-          // Check if labels would overlap
-          if (currentX - prevX < 50) { // Adjust this value based on your needs
+          // Check if labels would overlap horizontally
+          if (currentX - prevX < 120) { // Increased from 80 to 120 for even better overlap prevention
             // Place this label higher than the previous one
             labelPositions.set(d.event, prevY - labelSpacing);
           } else {
             // Reset to base height if no overlap
             labelPositions.set(d.event, -labelHeight);
-          }
-        });
-
-        // **** New code block: Calculate vertical offsets for timestamp (lower) labels ****
-        const timeLabelSpacing = 15; // Adjust spacing for timestamps if needed
-        const timeLabelBase = 40;    // Base y offset for timestamps below markers
-        const timeLabelPositions = new Map();
-
-        sortedData.forEach((d, i) => {
-          if (i === 0) {
-            timeLabelPositions.set(d.event, timeLabelBase);
-            return;
-          }
-
-          const prevPoint = sortedData[i - 1];
-          const currentX = x(d.position);
-          const prevX = x(prevPoint.position);
-          const prevY = timeLabelPositions.get(prevPoint.event);
-
-          // If the current timestamp is too close horizontally, push it further down
-          if (currentX - prevX < 50) {
-            timeLabelPositions.set(d.event, prevY + timeLabelSpacing);
-          } else {
-            timeLabelPositions.set(d.event, timeLabelBase);
           }
         });
 
@@ -476,37 +416,45 @@
           .join("text")
           .attr("class", "label-event")
           .attr("text-anchor", "middle")
-          .style("font-size", "1.2rem")
+          .style("font-size", "1.5rem")
           .text(d => d.event)
           .transition().duration(duration)
           .attr("y", d => labelPositions.get(d.event))
           .style("fill", "#374151")
-          .style("opacity", d => selectedDevelopers.has("All") ? 1 : 
-            (selectedDevelopers.has(d.developer) ? 1 : 0.2));
+          .style("opacity", d => {
+            // Base opacity calculation
+            if (selectedDevelopers.has("All")) {
+              // For "All" selection, make labels semi-transparent by default
+              return 0.7;
+            }
+            // For filtered view, keep selected developers' labels more visible
+            return selectedDevelopers.has(d.developer) ? 0.9 : 0.2;
+          });
 
-        // Add this helper function to calculate text width
-        function getTextWidth(text, fontSize = '1rem') {
-          const canvas = document.createElement('canvas');
-          const context = canvas.getContext('2d');
-          context.font = `${fontSize} sans-serif`;
-          return context.measureText(text).width;
-        }
-
-        // Update time label position with overlap detection using timeLabelPositions
+        // Update time label position
         group.selectAll(".label-time")
           .data(d => [d])
           .join("text")
           .attr("class", "label-time")
+          .attr("y", 40)
           .attr("text-anchor", "middle")
-          .style("font-size", "0.8rem")
+          .style("font-size", "1rem")
           .style("fill", "#374151")
           .text(d => {
             const date = new Date(d.time);
             return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
           })
           .transition().duration(duration)
-          .attr("y", d => timeLabelPositions.get(d.event))
-          .style("opacity", 1);
+          .style("opacity", d => {
+            // Custom opacity rules for timestamps
+            if (d.position < currentDomain[0]) return 0;
+            if (selectedDevelopers.has("All")) {
+              // Make timestamps more visible than their markers
+              return Math.min(1, calculateOpacity(d, data, x));
+            }
+            // For filtered developers, keep timestamps more visible
+            return selectedDevelopers.has(d.developer) ? 1 : 0.4;
+          });
 
         // *** Updated reordering: sort the existing group selection ***
         group.sort((a, b) => labelPositions.get(b.event) - labelPositions.get(a.event));
@@ -516,6 +464,36 @@
 
         // Set isInitialRender to false after first render
         isInitialRender = false;
+
+        // Add this at the end of the render function to enhance hover effects
+        group
+          .on("mouseenter", function(event, d) {
+            // Existing hover code stays as is
+            
+            // Also make the current label fully visible
+            d3.select(this).select(".label-event")
+              .style("opacity", 1)
+              .style("text-shadow", "0 0 5px rgba(255,255,255,0.8)"); // Add glow effect
+              
+            // Make other labels more transparent
+            svg.selectAll(".event")
+              .filter(p => p.event !== d.event)
+              .select(".label-event")
+              .style("opacity", 0.3);
+          })
+          .on("mouseleave", function(event, d) {
+            // Existing mouseleave code stays as is
+            
+            // Restore all labels to their calculated opacity
+            svg.selectAll(".label-event")
+              .style("text-shadow", "none")
+              .style("opacity", p => {
+                if (selectedDevelopers.has("All")) {
+                  return 0.7;  
+                }
+                return selectedDevelopers.has(p.developer) ? 0.9 : 0.2;
+              });
+          });
       }
 
       function zoomToEvent(d) {

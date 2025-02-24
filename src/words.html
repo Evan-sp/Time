@@ -5,12 +5,326 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Words Page</title>
     <link href="./output.css" rel="stylesheet">
+    <style>
+        /* Add transition styles */
+        .text-3xl {
+            transition: opacity 0.3s ease, color 0.5s ease, transform 0.2s ease;
+        }
+        .fade-out {
+            opacity: 0;
+        }
+        .word-container:hover {
+            transform: scale(1.05);
+            filter: brightness(1.2);
+        }
+    </style>
 </head>
-<body class="min-h-screen bg-blue-800">
+<body class="min-h-screen bg-stone-800">
     <div class="container mx-auto p-8 flex justify-center items-center h-screen">
-        <p class="text-3xl text-blue-400 font-mono mx-4">Fire</p>
-        <p class="text-3xl text-blue-400 font-mono mx-4">Hello</p>
-        <p class="text-3xl text-blue-400 font-mono mx-4">Ocean</p>
+        <div class="text-3xl font-mono mx-4 cursor-pointer w-60 text-center word-container fade-in" id="word1"></div>
+        <div class="text-3xl font-mono mx-4 cursor-pointer w-60 text-center word-container fade-in" id="word2"></div>
+        <div class="text-3xl font-mono mx-4 cursor-pointer w-60 text-center word-container fade-in" id="word3"></div>
     </div>
+
+    <script>
+        // Add global variables to track previous words and emojis
+        const previousWords = new Set();
+        const previousEmojis = new Set();
+
+        // Cache for color and emoji responses
+        const colorCache = {};
+        const emojiCache = {};
+
+        async function callLLM(message) {
+            try {
+                const response = await fetch('http://localhost:3000/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                return data.message;
+            } catch (error) {
+                console.error('Error:', error);
+                throw error;
+            }
+        }
+
+        async function getColor(word) {
+            // Check cache first
+            if (colorCache[word]) {
+                return colorCache[word];
+            }
+            
+            const color = await callLLM(`
+                Return a hex color code that best represents the word '${word}'.
+                The color should be vibrant and saturated with medium-high brightness (avoid very dark or very light colors).
+                Respond only with the 7-character hex code like #FF0000, no other text.
+                The color values (R,G,B) should each be between 96 (60 hex) and 220 (DC hex) to ensure good visibility.
+                `);
+            
+            // Cache the result
+            colorCache[word] = color;
+            return color;
+        }
+
+        // Updated: Function to get an emoji representing the word, ensuring it's unique
+        async function getEmoji(word, usedEmojis = []) {
+            // Check cache first, but also check against both previously used emojis and current set emojis
+            if (emojiCache[word] && !usedEmojis.includes(emojiCache[word]) && !previousEmojis.has(emojiCache[word])) {
+                return emojiCache[word];
+            }
+            
+            // Track attempts to prevent infinite loops
+            let attempts = 0;
+            let emoji;
+            
+            do {
+                emoji = await callLLM(`
+                    Return a single emoji that best represents the word '${word}'.
+                    Respond with only the emoji character, without any additional text.
+                    ${attempts > 0 ? 'IMPORTANT: You MUST select a different emoji than before.' : ''}
+                    ${Array.from(previousEmojis).length > 0 ? `Avoid using these emojis: ${Array.from(previousEmojis).join(', ')}` : ''}
+                `);
+                
+                attempts++;
+            } while ((usedEmojis.includes(emoji) || previousEmojis.has(emoji)) && attempts < 3);
+            
+            // Cache the result
+            emojiCache[word] = emoji;
+            return emoji;
+        }
+
+        // Updated: Function to get three new words from the LLM based on a clicked word
+        async function getNewWords(referenceWord) {
+            // Convert the set to an array and join it for the prompt
+            const previousWordsArray = Array.from(previousWords);
+            const avoidWordsStr = previousWordsArray.length > 0 ? 
+                `Avoid these recently used words: ${previousWordsArray.join(', ')}. ` : '';
+            
+            const response = await callLLM(`
+                Generate exactly three words that are thematically or semantically related to '${referenceWord}'.
+                ${avoidWordsStr}
+                The words should be distinct but connected through meaning, imagery, or association.
+                Return only a comma-separated list with no other text.
+                The words should be single words (no phrases), all lowercase.
+                Ensure the words are not too similar to the reference word.
+                Example: For 'ocean' return 'wave,coral,tide'
+                For 'fire' return 'flame,smoke,ember'
+            `);
+            // Split the returned comma-separated list into an array of words.
+            return response.split(',').map(word => word.trim());
+        }
+
+        // Preload next set of words in the background
+        let preloadedWords = null;
+        let preloadedColors = null;
+        let preloadedEmojis = null;
+        
+        // Function to preload the next set of words based on current words
+        async function preloadNextWords() {
+            try {
+                // Get a random word from current display to use as reference
+                const currentWords = Array.from(document.querySelectorAll('.word')).map(el => el.textContent);
+                if (currentWords.length === 0) return;
+                
+                const referenceWord = currentWords[Math.floor(Math.random() * currentWords.length)];
+                
+                // Get new words
+                const newWords = await getNewWords(referenceWord);
+                
+                // Preload colors and emojis
+                const colors = await Promise.all(newWords.map(word => getColor(word)));
+                
+                const emojis = [];
+                for (const word of newWords) {
+                    const emoji = await getEmoji(word, emojis);
+                    emojis.push(emoji);
+                }
+                
+                // Store preloaded data
+                preloadedWords = newWords;
+                preloadedColors = colors;
+                preloadedEmojis = emojis;
+            } catch (error) {
+                console.error("Error preloading words:", error);
+            }
+        }
+
+        // Updated: Function that handles the click event to generate and update words.
+        async function generateNewWords(event) {
+            const container = event.target.closest('.word-container');
+            const wordElement = container.querySelector('.word');
+            
+            // Check if word element exists
+            if (!wordElement) {
+                console.error("Word element not found");
+                return;
+            }
+            
+            const referenceWord = wordElement.textContent;
+            
+            try {
+                // First fade out all word elements
+                const wordElements = document.querySelectorAll('.text-3xl');
+                wordElements.forEach(el => el.classList.add('fade-out'));
+                
+                // Reduced wait time for fade-out transition
+                await new Promise(resolve => setTimeout(resolve, 300));
+                
+                // Add the current words to the previous words set before updating
+                document.querySelectorAll('.word').forEach(wordElement => {
+                    previousWords.add(wordElement.textContent);
+                });
+                
+                let newWords, colors, emojis;
+                
+                // Use preloaded data if available
+                if (preloadedWords) {
+                    newWords = preloadedWords;
+                    colors = preloadedColors;
+                    emojis = preloadedEmojis;
+                    
+                    // Reset preloaded data
+                    preloadedWords = null;
+                    preloadedColors = null;
+                    preloadedEmojis = null;
+                } else {
+                    // Get three new words based on the clicked word.
+                    newWords = await getNewWords(referenceWord);
+                    
+                    // Get the color code for each new word in parallel.
+                    colors = await Promise.all(newWords.map(word => getColor(word)));
+                    
+                    // Get the emoji for each new word sequentially to ensure uniqueness
+                    emojis = [];
+                    for (const word of newWords) {
+                        const emoji = await getEmoji(word, emojis);
+                        emojis.push(emoji);
+                    }
+                }
+                
+                // Add emojis to the previous emojis set
+                emojis.forEach(emoji => previousEmojis.add(emoji));
+                
+                const elements = ['word1', 'word2', 'word3'];
+                
+                // Update word texts and their corresponding emojis/colors.
+                newWords.forEach((word, i) => {
+                    const element = document.getElementById(elements[i]);
+                    // Insert the emoji above the word.
+                    element.innerHTML = `
+                        <div class="emoji text-center mb-2">${emojis[i]}</div>
+                        <div class="word text-center">${word}</div>
+                    `;
+                    element.style.color = colors[i];
+                });
+                
+                // Fade elements back in after a short delay
+                setTimeout(() => {
+                    wordElements.forEach(el => el.classList.remove('fade-out'));
+                }, 0);
+                
+                // Limit the size of the previous words and emojis sets
+                if (previousWords.size > 20) {
+                    const wordsArray = Array.from(previousWords);
+                    previousWords.clear();
+                    wordsArray.slice(-20).forEach(w => previousWords.add(w));
+                }
+                
+                if (previousEmojis.size > 6) {
+                    const emojisArray = Array.from(previousEmojis);
+                    previousEmojis.clear();
+                    emojisArray.slice(-6).forEach(e => previousEmojis.add(e));
+                }
+                
+                // Start preloading the next set of words
+                setTimeout(() => preloadNextWords(), 500);
+            } catch (error) {
+                console.error("Error generating new words:", error);
+            }
+        }
+
+        // Updated: Function to get three random words from the LLM
+        async function getRandomWords() {
+            const previousWordsArray = Array.from(previousWords);
+            const avoidWordsStr = previousWordsArray.length > 0 ? 
+                `Avoid these previously used words: ${previousWordsArray.join(', ')}. ` : '';
+            
+            const response = await callLLM(`
+                Generate exactly three random words that are diverse in meaning and category.
+                ${avoidWordsStr}
+                The words should be distinct, interesting, and evoke clear imagery.
+                Return only a comma-separated list with no other text.
+                The words should be single words (no phrases), all lowercase.
+                Example: 'mountain,butterfly,jazz'
+            `);
+            // Split the returned comma-separated list into an array of words
+            return response.split(',').map(word => word.trim());
+        }
+
+        // Updated: Function to set initial words and colors
+        async function setWordColors() {
+            try {
+                // Get three random words instead of using hardcoded ones
+                const words = await getRandomWords();
+                const elements = ['word1', 'word2', 'word3'];
+                
+                // Add initial words to previously used words set
+                words.forEach(word => previousWords.add(word));
+                
+                // Make color API calls in parallel
+                const colors = await Promise.all(words.map(word => getColor(word)));
+                
+                // Get emojis sequentially to ensure uniqueness
+                const emojis = [];
+                for (const word of words) {
+                    const emoji = await getEmoji(word, emojis);
+                    emojis.push(emoji);
+                    // Add emoji to previously used emojis set
+                    previousEmojis.add(emoji);
+                }
+                
+                // Initially set all elements to fade-out
+                document.querySelectorAll('.text-3xl').forEach(el => el.classList.add('fade-out'));
+                
+                // Apply all colors, emojis, and words at once
+                colors.forEach((color, i) => {
+                    const element = document.getElementById(elements[i]);
+                    // Insert the emoji above the word
+                    element.innerHTML = `
+                        <div class="emoji text-center mb-2">${emojis[i]}</div>
+                        <div class="word text-center">${words[i]}</div>
+                    `;
+                    element.style.color = color;
+                });
+                
+                // Fade elements in after a short delay
+                setTimeout(() => {
+                    document.querySelectorAll('.text-3xl').forEach(el => el.classList.remove('fade-out'));
+                }, 100);
+
+                // Start preloading the next set of words after initial load
+                setTimeout(() => preloadNextWords(), 1000);
+            } catch (error) {
+                console.error('Error setting up initial words:', error);
+            }
+        }
+
+        // Call the function when the page loads
+        setWordColors();
+        
+        // Attach the click event to all word container elements
+        document.querySelectorAll('.word-container').forEach(elem => {
+            elem.addEventListener('click', generateNewWords);
+        });
+    </script>
 </body>
 </html>

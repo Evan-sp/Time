@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Page</title>
+    <link href="./output.css" rel="stylesheet">
+</head>
+<body class="min-h-screen bg-slate-800">
+    <div class="container mx-auto p-8">
+        <div class="max-w-2xl mx-auto">
+            <div class="mb-4">
+                <textarea id="userInput" class="w-full p-2 rounded bg-slate-600 text-white" 
+                    placeholder="Type your message here..."></textarea>
+                <button onclick="sendMessage()" 
+                    class="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                    Send
+                </button>
+            </div>
+            <div id="response" class="bg-slate-700 p-6 rounded-lg text-white"></div>
+        </div>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            const userInput = document.getElementById('userInput').value;
+            const responseDiv = document.getElementById('response');
+            responseDiv.textContent = 'Loading...';
+
+            try {
+                const response = await fetch('http://localhost:3000/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: userInput
+                    })
+                });
+
+                const data = await response.json();
+                console.log(data);
+                responseDiv.textContent = data.content[0].text;
+            } catch (error) {
+                console.error('Error:', error);
+                responseDiv.textContent = 'Error fetching response';
+            }
+        }
+    </script>
+</body>
+</html>
