@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slate Page</title>
+    <link href="./output.css" rel="stylesheet">
+</head>
+<body class="min-h-screen bg-slate-800">
+<div class="flex justify-center items-center h-screen">
+  <div class="relative w-64 h-64 bg-gradient-to-br from-white to-black" id="colorPicker">
+    <div class="absolute inset-0 bg-gradient-to-r from-transparent to-red-500"></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-transparent to-transparent to-green-500"></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-transparent to-blue-500"></div>
+    <div class="absolute w-4 h-4 -translate-x-1/2 -translate-y-1/2 border-2 border-white rounded-full cursor-pointer" id="cursor"></div>
+  </div>
+  <div class="ml-4 w-32 h-32 rounded-lg" id="preview"></div>
+</div>
+
+<script>
+const picker = document.getElementById('colorPicker');
+const cursor = document.getElementById('cursor'); 
+const preview = document.getElementById('preview');
+
+let isDragging = false;
+
+function getColor(e) {
+  const rect = picker.getBoundingClientRect();
+  const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+  const y = Math.max(0, Math.min(e.clientY - rect.top, rect.height));
+  
+  cursor.style.left = x + 'px';
+  cursor.style.top = y + 'px';
+
+  // Calculate color based on position
+  const saturation = (x / rect.width) * 100;
+  const brightness = 100 - (y / rect.height) * 100;
+  const hue = (x / rect.width) * 360;
+
+  const color = `hsl(${hue}, ${saturation}%, ${brightness}%)`;
+  preview.style.backgroundColor = color;
+}
+
+picker.addEventListener('mousedown', (e) => {
+  isDragging = true;
+  getColor(e);
+});
+
+document.addEventListener('mousemove', (e) => {
+  if (isDragging) {
+    getColor(e);
+  }
+});
+
+document.addEventListener('mouseup', () => {
+  isDragging = false;
+});
+</script>
+
+</body>
+</html>

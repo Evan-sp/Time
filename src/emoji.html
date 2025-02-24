@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emoji Page</title>
+    <link href="./output.css" rel="stylesheet">
+    <style>
+        .magnifier {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            border: 3px solid #f3f4f6;
+            border-radius: 50%;
+            pointer-events: none;
+            overflow: hidden;
+            transform: translate(-50%, -50%);
+            display: none;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+        .magnifier::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, transparent 50%, rgba(0,0,0,0.5) 100%);
+            transform: scale(0.5);
+        }
+        .magnified {
+            transform: scale(1.5);
+            z-index: 10;
+            position: relative;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-slate-800">
+<div class="container mx-auto p-8">
+  <div id="emoji-grid" class="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
+    <div class="flex items-center justify-center text-4xl hover:scale-125 transition-transform cursor-pointer">😀</div>
+    <div class="flex items-center justify-center text-4xl hover:scale-125 transition-transform cursor-pointer">😃</div>
+    <div class="flex items-center justify-center text-4xl hover:scale-125 transition-transform cursor-pointer">😄</div>
+    <div class="flex items-center justify-center text-4xl hover:scale-125 transition-transform cursor-pointer">😁</div>
+    <div class="flex items-center justify-center text-4xl hover:scale-125 transition-transform cursor-pointer">😅</div>
+    <div class="flex items-center justify-center text-4xl hover:scale-125 transition-transform cursor-pointer">😂</div>
+    <div class="flex items-center justify-center text-4xl hover:scale-125 transition-transform cursor-pointer">🤣</div>
+    <div class="flex items-center justify-center text-4xl hover:scale-125 transition-transform cursor-pointer">😊</div>
+    <div class="flex items-center justify-center text-4xl hover:scale-125 transition-transform cursor-pointer">😇</div>
+    <div class="flex items-center justify-center text-4xl hover:scale-125 transition-transform cursor-pointer">🙂</div>
+    <div class="flex items-center justify-center text-4xl hover:scale-125 transition-transform cursor-pointer">🙃</div>
+    <div class="flex items-center justify-center text-4xl hover:scale-125 transition-transform cursor-pointer">😉</div>
+    <div class="flex items-center justify-center text-4xl hover:scale-125 transition-transform cursor-pointer">😌</div>
+    <div class="flex items-center justify-center text-4xl hover:scale-125 transition-transform cursor-pointer">😍</div>
+    <div class="flex items-center justify-center text-4xl hover:scale-125 transition-transform cursor-pointer">🥰</div>
+    <div class="flex items-center justify-center text-4xl hover:scale-125 transition-transform cursor-pointer">😘</div>
+    <div class="flex items-center justify-center text-4xl hover:scale-125 transition-transform cursor-pointer">😗</div>
+    <div class="flex items-center justify-center text-4xl hover:scale-125 transition-transform cursor-pointer">😙</div>
+    <div class="flex items-center justify-center text-4xl hover:scale-125 transition-transform cursor-pointer">😚</div>
+    <div class="flex items-center justify-center text-4xl hover:scale-125 transition-transform cursor-pointer">😋</div>
+    <div class="flex items-center justify-center text-4xl hover:scale-125 transition-transform cursor-pointer">😛</div>
+    <div class="flex items-center justify-center text-4xl hover:scale-125 transition-transform cursor-pointer">😝</div>
+    <div class="flex items-center justify-center text-4xl hover:scale-125 transition-transform cursor-pointer">😜</div>
+    <div class="flex items-center justify-center text-4xl hover:scale-125 transition-transform cursor-pointer">🤪</div>
+  </div>
+</div>
+<div class="magnifier"></div>
+
+<script>
+    const magnifier = document.querySelector('.magnifier');
+    const emojiGrid = document.getElementById('emoji-grid');
+    const emojis = document.querySelectorAll('#emoji-grid > div');
+
+    document.addEventListener('mousemove', (e) => {
+        magnifier.style.left = `${e.pageX}px`;
+        magnifier.style.top = `${e.pageY}px`;
+        magnifier.style.display = 'block';
+
+        // Remove previous magnified classes
+        emojis.forEach(emoji => emoji.classList.remove('magnified'));
+
+        // Get emojis near the cursor
+        const rect = magnifier.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+
+        emojis.forEach(emoji => {
+            const emojiRect = emoji.getBoundingClientRect();
+            const emojiCenterX = emojiRect.left + emojiRect.width / 2;
+            const emojiCenterY = emojiRect.top + emojiRect.height / 2;
+
+            // Check if emoji is within magnifier area
+            if (Math.abs(emojiCenterX - centerX) < 100 && 
+                Math.abs(emojiCenterY - centerY) < 100) {
+                emoji.classList.add('magnified');
+            }
+        });
+    });
+
+    document.addEventListener('mouseleave', () => {
+        magnifier.style.display = 'none';
+        emojis.forEach(emoji => emoji.classList.remove('magnified'));
+    });
+</script>
+</body>
+</html>

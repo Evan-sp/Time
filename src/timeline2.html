@@ -51,137 +51,167 @@
       right: -3px;
       bottom: -3px;
       border-radius: 10px;
-      border: 2px solid;
-      border-color: inherit;
-      opacity: 0.2;
+      border: 2px solid rgb(209 213 219); /* Tailwind gray-300 */
+      opacity: 0.5;
       pointer-events: none;
+    }
+
+    /* Add hover effect for the active ring */
+    .developer-button-active:hover::after {
+      opacity: 0.7;
     }
   </style>
 </head>
-<body class="bg-gray-100 text-gray-500 max-h-screen p-8 flex flex-col font-thin relative">
-    <div id="developerButtons" class="flex gap-2 mb-6">
-        <button class="px-3 py-1 text-sm bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors">All</button>
-        <button class="px-3 py-1 text-sm bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors">XAI</button>
-        <button class="px-3 py-1 text-sm bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors">OpenAI</button>
-        <button class="px-3 py-1 text-sm bg-purple-100 text-purple-600 rounded-lg hover:bg-purple-200 transition-colors">qwen</button>
-        <button class="px-3 py-1 text-sm bg-orange-100 text-orange-600 rounded-lg hover:bg-orange-200 transition-colors">Anthropic</button>
-        <button class="px-3 py-1 text-sm bg-cyan-100 text-cyan-600 rounded-lg hover:bg-cyan-200 transition-colors">DeepSeek</button>
-    </div>
-    <h1 class="text-3xl font-extralight text-gray-400 mb-10">Releases</h1>
-    <div class="container flex flex-col max-h-screen">
-        <div class="flex">
-            <div id="descriptionBox" class="mr-12 w-[30rem] border-0 border-dashed border-gray-200/0 bg-gray-200/0 rounded-2xl flex flex-col">
-                <h1 id="eventDescription" class="text-6xl text-gray-600 title-transition visible"></h1>
-                <p class="text-xl text-gray-700">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque euismod magna sit amet ligula pretium, in porta felis convallis. Phasellus accumsan purus in viverra facilisis. Vestibulum eget gravida tellus, eu consequat lorem.
-                </p>
-            </div>
-            <div id="statsBox" class="w-[12rem]">
-                <h1 class="text-3xl text-gray-600 title-transition visible">Stats</h1>
-                <div class="flex gap-2 items-center title-transition visible">
-                    <div class="h-3 w-3 bg-blue-300 rounded-full"></div>
-                    <p class="font-semibold cursor-pointer" data-stat="Parameters">Parameters: </p>
-                    <p class="font-extralight" id="parametersValue">10B</p>
+<body class="bg-gray-100 text-gray-500 max-h-screen p-8 flex flex-col items-center font-thin relative">
+    <div class="max-w-[1264px] w-full">
+        <div id="developerButtons" class="flex gap-2 mb-6 bg-gray-200/80 rounded-2xl w-fit p-3">
+            <button class="px-3 py-1.5 text-sm bg-gray-300 font-semibold text-white rounded-lg hover:bg-gray-200 transition-colors">All</button>
+            <button class="px-3 py-1.5 text-sm bg-blue-300 font-semibold text-white rounded-lg hover:bg-blue-200 transition-colors">XAI</button>
+            <button class="px-3 py-1.5 text-sm bg-green-300 font-semibold text-white rounded-lg hover:bg-green-200 transition-colors">OpenAI</button>
+            <button class="px-3 py-1.5 text-sm bg-purple-300 font-semibold text-white rounded-lg hover:bg-purple-200 transition-colors">qwen</button>
+            <button class="px-3 py-1.5 text-sm bg-orange-300 font-semibold text-white rounded-lg hover:bg-orange-200 transition-colors">Anthropic</button>
+            <button class="px-3 py-1.5 text-sm bg-cyan-300 font-semibold text-white rounded-lg hover:bg-cyan-200 transition-colors">DeepSeek</button>
+        </div>
+        <div class="container flex flex-col max-h-screen">
+            <div class="flex bg-gray-200/60 rounded-2xl w-fit p-8">
+                <div id="descriptionBox" class="mr-12 w-[30rem] h-[15rem] border-0 border-dashed border-gray-200/0 bg-gray-200/0 rounded-2xl flex flex-col">
+                    <h1 id="eventDescription" class="text-6xl text-gray-600 title-transition visible"></h1>
+                    <p id="modelDescription" class="text-xl text-gray-700" style="transition: opacity 400ms ease-in-out">
+                    </p>
                 </div>
-                <div class="flex gap-2 items-center title-transition visible">
-                    <div class="h-3 w-3 bg-green-300 rounded-full"></div>
-                    <p class="font-semibold cursor-pointer" data-stat="FLOPs">FLOPs: </p>
-                    <p class="font-extralight" id="flopsValue">300B</p>
-                </div>
-                <div class="flex gap-2 items-center title-transition visible">
-                    <div class="h-3 w-3 bg-purple-300 rounded-full"></div>
-                    <p class="font-semibold cursor-pointer" data-stat="Layers">Layers: </p>
-                    <p class="font-extralight" id="layersValue">10k</p>
-                </div>
-                <div class="flex flex-col">
+                <div id="statsBox" class="min-w-[16rem] mt-6">
+                    <h1 class="text-gray-500 text-xl mb-2">Model Architecture</h1>
                     <div class="flex gap-2 items-center title-transition visible">
-                        <div class="h-3 w-3 bg-gray-300 rounded-full"></div>
-                        <p class="font-semibold cursor-pointer" data-stat="GPUs">GPUs: </p>
-                        <p class="font-extralight" id="gpusValue">100k</p>
+                        <div class="h-3 w-3 bg-indigo-300 rounded-full"></div>
+                        <p class="font-semibold cursor-pointer" data-stat="Parameters">Parameters: </p>
+                        <p class="font-extralight" id="parameterCountValue"></p>
                     </div>
-                    <p class="text-gray-500 text-sm ml-6 flex">Colossus Supercluster</p>
+                    <div class="flex gap-2 items-center title-transition visible">
+                        <div class="h-3 w-3 bg-indigo-300 rounded-full"></div>
+                        <p class="font-semibold cursor-pointer" data-stat="Layers">Layers: </p>
+                        <p class="font-extralight" id="layersValue"></p>
+                    </div>
+                    <div class="flex gap-2 items-center title-transition visible">
+                        <div class="h-3 w-3 bg-indigo-300 rounded-full"></div>
+                        <p class="font-semibold cursor-pointer" data-stat="Attention Heads">Attention Heads: </p>
+                        <p class="font-extralight" id="attentionHeadsValue"></p>
+                    </div>
+                    <div class="flex gap-2 items-center title-transition visible">
+                        <div class="h-3 w-3 bg-indigo-300 rounded-full"></div>
+                        <p class="font-semibold cursor-pointer" data-stat="Hidden Size">Hidden Size: </p>
+                        <p class="font-extralight" id="hiddenSizeValue"></p>
+                    </div>
+                    <div class="flex gap-2 items-center title-transition visible">
+                        <div class="h-3 w-3 bg-indigo-300 rounded-full"></div>
+                        <p class="font-semibold cursor-pointer" data-stat="Vocabulary">Vocabulary: </p>
+                        <p class="font-extralight" id="vocabSizeValue"></p>
+                    </div>
+                    <div class="flex gap-2 items-center title-transition visible">
+                        <div class="h-3 w-3 bg-indigo-300 rounded-full"></div>
+                        <p class="font-semibold cursor-pointer" data-stat="Context Window">Context Window: </p>
+                        <p class="font-extralight" id="contextWindowValue"></p>
+                    </div>
                 </div>
-                <div class="flex gap-2 items-center title-transition visible">
-                    <p>Developed By: </p>
-                    <p id="developerValue" class="cursor-pointer" data-stat="Xai Labs">Xai Labs</p>
+                <div id="statsBox2" class="min-w-[16rem] mt-6 -ml-5">
+                    <h1 class="text-gray-500 text-xl mb-2">Training & Performance</h1>
+                    <div class="flex gap-2 items-center title-transition visible">
+                        <div class="h-3 w-3 bg-purple-300 rounded-full"></div>
+                        <p class="font-semibold cursor-pointer" data-stat="Training Tokens">Training Tokens: </p>
+                        <p class="font-extralight" id="trainingTokensValue"></p>
+                    </div>
+                    <div class="flex gap-2 items-center title-transition visible">
+                        <div class="h-3 w-3 bg-purple-300 rounded-full"></div>
+                        <p class="font-semibold cursor-pointer" data-stat="Training Steps">Training Steps: </p>
+                        <p class="font-extralight" id="trainingStepsValue"></p>
+                    </div>
+                    <div class="flex gap-2 items-center title-transition visible">
+                        <div class="h-3 w-3 bg-purple-300 rounded-full"></div>
+                        <p class="font-semibold cursor-pointer" data-stat="FLOPs">FLOPs: </p>
+                        <p class="font-extralight" id="flopsValue"></p>
+                    </div>
+                    <div class="flex gap-2 items-center title-transition visible">
+                        <div class="h-3 w-3 bg-purple-300 rounded-full"></div>
+                        <p class="font-semibold cursor-pointer" data-stat="Memory">Memory: </p>
+                        <p class="font-extralight" id="memoryFootprintValue"></p>
+                    </div>
+                    <div class="flex gap-2 items-center title-transition visible">
+                        <div class="h-3 w-3 bg-purple-300 rounded-full"></div>
+                        <p class="font-semibold cursor-pointer" data-stat="Energy">Energy: </p>
+                        <p class="font-extralight" id="energyConsumptionValue"></p>
+                    </div>
+                    <div class="flex gap-2 items-center title-transition visible">
+                        <div class="h-3 w-3 bg-purple-300 rounded-full"></div>
+                        <p class="font-semibold cursor-pointer" data-stat="Latency">Latency: </p>
+                        <p class="font-extralight" id="inferenceLatencyValue"></p>
+                    </div>
+                    <div class="flex gap-2 items-center title-transition visible">
+                        <div class="h-3 w-3 bg-purple-300 rounded-full"></div>
+                        <p class="font-semibold cursor-pointer" data-stat="Throughput">Throughput: </p>
+                        <p class="font-extralight" id="throughputValue"></p>
+                    </div>
+                </div>
+                <div id="statsBox3" class="min-w-[16rem] mt-6 -ml-7">
+                    <h1 class="text-gray-500 text-xl mb-2">API Cost</h1>
+                    <div class="flex gap-2 items-center title-transition visible">
+                        <div class="h-3 w-3 bg-pink-300 rounded-full"></div>
+                        <p class="font-semibold cursor-pointer" data-stat="Input Cost">Input Cost: </p>
+                        <p class="font-extralight" id="inputCostValue"></p>
+                    </div>
+                    <div class="flex gap-2 items-center title-transition visible">
+                        <div class="h-3 w-3 bg-pink-300 rounded-full"></div>
+                        <p class="font-semibold cursor-pointer" data-stat="Output Cost">Output Cost: </p>
+                        <p class="font-extralight" id="outputCostValue"></p>
+                    </div>
                 </div>
             </div>
-            <div id="statsBox2" class="mt-9 -ml-6">
-                <div class="flex gap-2 items-center">
-                    <div class="h-3 w-3 bg-orange-500 rounded-full"></div>
-                    <p class="font-semibold cursor-pointer" data-stat="Speed">Speed: </p>
-                    <p class="font-extralight title-transition" id="speedValue">12k/s</p>
+            <div class="mt-10 w-[79rem] flex flex-col justify-center items-center border-0 border-gray-200 bg-gray-200/0 rounded-2xl">
+                <div class="flex w-full items-center">
+                    <div id="zoomOutContainer" style="width: 0; opacity: 0; overflow: hidden; pointer-events: none; transition: width 500ms, opacity 500ms;">
+                        <button id="zoomOutBtn" 
+                                class="px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg transition-all duration-500 hover:bg-blue-600">
+                            &lt;
+                        </button>
+                    </div>
+                    <div id="zoomButtonsContainer" class="flex gap-4 transition-all duration-500 bg-gray-200/80 rounded-2xl w-fit p-3">
+                        <button id="zoom30Btn" class="px-3 py-1.5 bg-blue-300 text-white font-semibold rounded-lg transition-all duration-500 hover:bg-blue-400">
+                            Q1 2023
+                        </button>
+                        <button id="zoom60Btn" class="px-3 py-1.5 bg-blue-300 text-white font-semibold rounded-lg transition-all duration-500 hover:bg-blue-400">
+                            Q2 2023
+                        </button>
+                        <button id="zoom75Btn" class="px-3 py-1.5 bg-blue-300 text-white font-semibold rounded-lg transition-all duration-500 hover:bg-blue-400">
+                            Q3 2023
+                        </button>
+                        <button id="zoom90Btn" class="px-3 py-1.5 bg-blue-300 text-white font-semibold rounded-lg transition-all duration-500 hover:bg-blue-400">
+                            Q4 2023
+                        </button>
+                        <button id="zoom95Btn" class="px-3 py-1.5 bg-blue-300 text-white font-semibold rounded-lg transition-all duration-500 hover:bg-blue-400">
+                            Q1 2024
+                        </button>
+                    </div>
                 </div>
-                <div class="flex gap-2 items-center">
-                    <div class="h-3 w-3 bg-yellow-300 rounded-full"></div>
-                    <p class="font-semibold cursor-pointer" data-stat="API Price">API Price: </p>
-                    <p class="font-extralight title-transition" id="apiPriceValue">5$ per 10k tokens</p>
+                <div class="relative" id="timeline-container">
                 </div>
-                <div class="flex gap-2 items-center">
-                    <div class="h-3 w-3 bg-fuchsia-300 rounded-full"></div>
-                    <p class="font-semibold cursor-pointer" data-stat="Training Cost">Training Cost: </p>
-                    <p class="font-extralight title-transition" id="trainingCostValue">5M</p>
-                </div>
-            </div>
-        </div>
-        <div class="mt-10 w-[79rem] flex flex-col justify-center items-center border-0 border-gray-200 bg-gray-200/0 rounded-2xl">
-            <div class="flex w-full items-center">
-                <div id="zoomOutContainer" style="width: 0; opacity: 0; overflow: hidden; pointer-events: none; transition: width 500ms, opacity 500ms;">
-                    <button id="zoomOutBtn" 
-                            class="px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg transition-all duration-500 hover:bg-blue-600">
-                        &lt;
-                    </button>
-                </div>
-                <div id="zoomButtonsContainer" class="flex gap-4 transition-all duration-500">
-                    <button id="zoom30Btn" class="px-4 py-2 bg-blue-300 text-white font-semibold rounded-lg transition-all duration-500 hover:bg-blue-400">
-                        30s
-                    </button>
-                    <button id="zoom60Btn" class="px-4 py-2 bg-blue-300 text-white font-semibold rounded-lg transition-all duration-500 hover:bg-blue-400">
-                        60s
-                    </button>
-                    <button id="zoom75Btn" class="px-4 py-2 bg-blue-300 text-white font-semibold rounded-lg transition-all duration-500 hover:bg-blue-400">
-                        75s
-                    </button>
-                    <button id="zoom90Btn" class="px-4 py-2 bg-blue-300 text-white font-semibold rounded-lg transition-all duration-500 hover:bg-blue-400">
-                        90s
-                    </button>
-                    <button id="zoom95Btn" class="px-4 py-2 bg-blue-300 text-white font-semibold rounded-lg transition-all duration-500 hover:bg-blue-400">
-                        95s
-                    </button>
-                </div>
-            </div>
-            <div class="relative" id="timeline-container">
-            </div>
-            <div class="mt-4">
-            <p class="text-gray-500 text-sm">Time Unit: Seconds — — —</p>
             </div>
         </div>
     </div>
-    <script>
-      // Data
-      const data = [
-        { event: "O1",   position: 0,    time: 0,    parameters:"10B",  flops:"300B",  layers:"10k",  gpus:"100k",  developer:"XAI",       speed: "12k/s",  apiPrice: "5$ per 10k tokens",  trainingCost: "5M" },
-        { event: "O3",   position: 40,   time: 40,   parameters:"12B",  flops:"350B",  layers:"12k",  gpus:"90k",   developer:"OpenAI",    speed: "15k/s",  apiPrice: "5.5$ per 10k tokens", trainingCost: "5.5M" },
-        { event: "O4",   position: 50,   time: 50,   parameters:"14B",  flops:"400B",  layers:"14k",  gpus:"80k",   developer:"Anthropic", speed: "18k/s",  apiPrice: "6$ per 10k tokens",   trainingCost: "6M" },
-        { event: "O4.1", position: 60,   time: 60,   parameters:"16B",  flops:"450B",  layers:"16k",  gpus:"70k",   developer:"DeepSeek",  speed: "20k/s",  apiPrice: "6.5$ per 10k tokens", trainingCost: "6.5M" },
-        { event: "O4.2", position: 70,   time: 70,   parameters:"18B",  flops:"500B",  layers:"18k",  gpus:"60k",   developer:"qwen",      speed: "22k/s",  apiPrice: "7$ per 10k tokens",   trainingCost: "7M" },
-        { event: "O4.3", position: 77,   time: 77,   parameters:"20B",  flops:"550B",  layers:"20k",  gpus:"50k",   developer:"OpenAI",    speed: "24k/s",  apiPrice: "7.5$ per 10k tokens", trainingCost: "7.5M" },
-        { event: "O4.4", position: 82,   time: 82,   parameters:"22B",  flops:"600B",  layers:"22k",  gpus:"40k",   developer:"XAI",       speed: "26k/s",  apiPrice: "8$ per 10k tokens",   trainingCost: "8M" },
-        { event: "O2",   position: 80,   time: 80,   parameters:"24B",  flops:"650B",  layers:"24k",  gpus:"35k",   developer:"Anthropic", speed: "28k/s",  apiPrice: "8.5$ per 10k tokens", trainingCost: "8.5M" },
-        { event: "O2.5", position: 90,   time: 90,   parameters:"26B",  flops:"700B",  layers:"26k",  gpus:"30k",   developer:"DeepSeek",  speed: "30k/s",  apiPrice: "9$ per 10k tokens",   trainingCost: "9M" },
-        { event: "O3.5", position: 95,   time: 95,   parameters:"28B",  flops:"750B",  layers:"28k",  gpus:"25k",   developer:"qwen",      speed: "32k/s",  apiPrice: "9.5$ per 10k tokens", trainingCost: "9.5M" },
-        { event: "O5",   position: 98,   time: 98,   parameters:"30B",  flops:"800B",  layers:"30k",  gpus:"20k",   developer:"OpenAI",    speed: "34k/s",  apiPrice: "10$ per 10k tokens",  trainingCost: "10M" },
-        { event: "O6",   position: 98.5, time: 98.5, parameters:"32B",  flops:"850B",  layers:"32k",  gpus:"18k",   developer:"XAI",       speed: "36k/s",  apiPrice: "10.5$ per 10k tokens", trainingCost: "10.5M" },
-        { event: "O7",   position: 99,   time: 99,   parameters:"34B",  flops:"900B",  layers:"34k",  gpus:"16k",   developer:"Anthropic", speed: "38k/s",  apiPrice: "11$ per 10k tokens",  trainingCost: "11M" },
-        { event: "O8",   position: 99.5, time: 99.5, parameters:"36B",  flops:"950B",  layers:"36k",  gpus:"14k",   developer:"DeepSeek",  speed: "40k/s",  apiPrice: "11.5$ per 10k tokens", trainingCost: "11.5M" },
-        { event: "O30",  position: 100,  time: 100,  parameters:"38B",  flops:"1000B", layers:"38k",  gpus:"12k",   developer:"qwen",      speed: "42k/s",  apiPrice: "12$ per 10k tokens",  trainingCost: "12M" }
-      ];
+    <footer class="fixed bottom-0 left-0 right-0 p-4 bg-gray-100 pb-8">
+        <div class="container mx-auto flex justify-center items-center">
+            <p class="text-gray-500 text-sm">Time Unit: Date — — —</p>
+        </div>
+    </footer>
+    <script type="module">
+      // Import the data
+      import { timelineData } from './timelineData.js';
+
+      // Remove the old data declaration and replace with:
+      const data = timelineData;
 
       // Dimensions and settings
-      const width = 1264; // adjust as needed
-      const height = 250; // increased from 150 to 300
-      const margin = { left: 50, right: 50 };
-      const pixelDistance = 40; // Minimum pixel distance for full opacity
+      const width = 1264; // keep the same
+      const height = 250; // keep the same
+      const margin = { left: 50, right: 50 }; // keep the same
+      const pixelDistance = 50; // increased from 40 to 50 to account for larger markers
       const hoverTransitionDuration = 400; // Duration for hover animations
 
       // Keep track of domain history for zoom in/out
@@ -209,6 +239,25 @@
       // Add this global variable near the top of the script
       let isInitialRender = true;
 
+      // Add this object with stat descriptions near the top of the script
+      const statDescriptions = {
+        "Parameters": "Total number of trainable parameters in the model, determining its capacity to learn patterns and relationships.",
+        "Layers": "Number of transformer layers in the model architecture, affecting its ability to process and understand complex patterns.",
+        "Attention Heads": "Number of attention mechanisms per layer that allow the model to focus on different parts of the input simultaneously.",
+        "Hidden Size": "Dimension of the hidden state vectors, affecting the model's capacity to represent information.",
+        "Vocabulary": "Number of unique tokens the model can recognize and process.",
+        "Context Window": "Maximum number of tokens that can be processed together in a single forward pass.",
+        "Training Tokens": "Total number of tokens the model was trained on, affecting its knowledge and capabilities.",
+        "Training Steps": "Number of optimization steps taken during training.",
+        "FLOPs": "Floating Point Operations required for training or inference, measuring computational complexity.",
+        "Memory": "Memory required to store model weights and process activations.",
+        "Energy": "Power consumption during training and inference operations.",
+        "Latency": "Time taken to generate responses.",
+        "Throughput": "Number of tokens that can be processed per second during inference.",
+        "Input Cost": "Cost per 1K tokens for input/prompt processing",
+        "Output Cost": "Cost per 1K tokens for output/completion generation"
+      };
+
       // Create an SVG inside the #timeline-container
       const svg = d3.select("#timeline-container")
         .append("svg")
@@ -220,16 +269,17 @@
         .domain(xDomainStack[0])
         .range([margin.left, width - margin.right]);
 
-      // Add this function to calculate opacity based on proximity
+      // Updated calculateOpacity to compare unique event identifiers instead of object references
       function calculateOpacity(currentPoint, allPoints, scale) {
         const currentX = scale(currentPoint.position);
         
         // Count how many points are within pixelDistance
         const nearbyPoints = allPoints.filter(p => {
           const pX = scale(p.position);
-          return Math.abs(pX - currentX) < pixelDistance && p !== currentPoint;
+          // Compare using a unique property (e.g., event) instead of p !== currentPoint
+          return Math.abs(pX - currentX) < pixelDistance && p.event !== currentPoint.event;
         });
-
+  
         // More nearby points = more transparent
         return Math.max(0.2, 1 - (nearbyPoints.length * 0.2));
       }
@@ -274,40 +324,39 @@
           return selectedDevelopers.has(d.developer) ? 1 : 0.2;
         }
 
-        // Update outer circle opacity
+        // Update outer circle size
         group.selectAll(".outer-circle")
           .data(d => [d])
           .join("circle")
           .attr("class", "outer-circle")
           .attr("fill", d => developerColors[d.developer].bg)
           .transition().duration(duration)
-          .attr("r", 18)
+          .attr("r", 18) // shrunk back to original
           .style("opacity", d => getMarkerOpacity(d));
 
-        // Update inner circle opacity
+        // Update inner circle size
         group.selectAll(".inner-circle")
           .data(d => [d])
           .join("circle")
           .attr("class", "inner-circle")
           .attr("fill", d => developerColors[d.developer].fill)
           .transition().duration(duration)
-          .attr("r", 6)
+          .attr("r", 6) // shrunk back to original
           .style("opacity", d => getMarkerOpacity(d));
 
-        // Add hover effects to the groups
+        // Update hover effects sizes
         group
           .on("mouseenter", function(event, d) {
             updateStats(d);
-
+  
             const description = d3.select("#eventDescription");
             description.classed("visible", false);  // Start transition out
             
             setTimeout(() => {
               description.text(d.event);
               description.classed("visible", true);  // Transition in
-            }, 200);  // Half of the transition duration
-
-            // Increase size of circles on hover and remove transparency
+            }, 200);
+  
             d3.select(this).select(".outer-circle")
               .transition()
               .duration(hoverTransitionDuration)
@@ -319,29 +368,43 @@
               .duration(hoverTransitionDuration)
               .attr("r", 8)
               .style("opacity", 1);
+
+            // Make the date fully visible
+            d3.select(this).select(".label-time")
+              .transition()
+              .duration(hoverTransitionDuration)
+              .style("opacity", 1);
           })
-          .on("mouseleave", function() {
-            // Return to original size
+          .on("mouseleave", function(event, d) {
+            // Restore both the marker size and its calculated opacity
             d3.select(this).select(".outer-circle")
               .transition()
               .duration(hoverTransitionDuration)
-              .attr("r", 18);
-            
+              .attr("r", 18)
+              .style("opacity", getMarkerOpacity(d));
+  
             d3.select(this).select(".inner-circle")
               .transition()
               .duration(hoverTransitionDuration)
-              .attr("r", 6);
+              .attr("r", 6)
+              .style("opacity", getMarkerOpacity(d));
+
+            // Restore the date's original opacity based on overlap
+            d3.select(this).select(".label-time")
+              .transition()
+              .duration(hoverTransitionDuration)
+              .style("opacity", 1);
           });
 
         // Calculate vertical offsets for labels to avoid overlap
-        const labelSpacing = 20; // Increased from 15 to 20
-        const labelHeight = 20; // Increased from 15 to 20
+        const labelSpacing = 30; // Spacing remains the same
+        const labelHeight = 30; // Raised from 20 to 40 to move labels further up
         
         // Sort data points by x position
         const sortedData = [...data].sort((a, b) => a.position - b.position);
         const labelPositions = new Map();
 
-        // Calculate vertical positions
+        // Calculate vertical positions for the event (upper) labels
         sortedData.forEach((d, i) => {
           if (i === 0) {
             labelPositions.set(d.event, -labelHeight);
@@ -354,7 +417,7 @@
           const prevY = labelPositions.get(prevPoint.event);
 
           // Check if labels would overlap
-          if (currentX - prevX < 30) { // Adjust this value based on your needs
+          if (currentX - prevX < 50) { // Adjust this value based on your needs
             // Place this label higher than the previous one
             labelPositions.set(d.event, prevY - labelSpacing);
           } else {
@@ -363,17 +426,41 @@
           }
         });
 
-        // Update connecting line opacity
+        // **** New code block: Calculate vertical offsets for timestamp (lower) labels ****
+        const timeLabelSpacing = 15; // Adjust spacing for timestamps if needed
+        const timeLabelBase = 40;    // Base y offset for timestamps below markers
+        const timeLabelPositions = new Map();
+
+        sortedData.forEach((d, i) => {
+          if (i === 0) {
+            timeLabelPositions.set(d.event, timeLabelBase);
+            return;
+          }
+
+          const prevPoint = sortedData[i - 1];
+          const currentX = x(d.position);
+          const prevX = x(prevPoint.position);
+          const prevY = timeLabelPositions.get(prevPoint.event);
+
+          // If the current timestamp is too close horizontally, push it further down
+          if (currentX - prevX < 50) {
+            timeLabelPositions.set(d.event, prevY + timeLabelSpacing);
+          } else {
+            timeLabelPositions.set(d.event, timeLabelBase);
+          }
+        });
+
+        // Update connecting line position to account for larger circles
         group.selectAll(".connecting-line")
           .data(d => [d])
           .join("line")
           .attr("class", "connecting-line")
           .transition().duration(duration)
           .attr("x1", 0)
-          .attr("y1", d => labelPositions.get(d.event) + 5)  // Start 5px below the label
+          .attr("y1", d => labelPositions.get(d.event) + 5)
           .attr("x2", 0)
-          .attr("y2", -14)  // Changed from -5 to -14 to stop before outer circle
-          .attr("stroke", "#9CA3AF")  // Light gray color
+          .attr("y2", -30) // updated to match raised label height (40)
+          .attr("stroke", "#9CA3AF")
           .attr("stroke-width", 1)
           .style("opacity", d => {
             if (selectedDevelopers.has("All")) {
@@ -389,6 +476,7 @@
           .join("text")
           .attr("class", "label-event")
           .attr("text-anchor", "middle")
+          .style("font-size", "1.2rem")
           .text(d => d.event)
           .transition().duration(duration)
           .attr("y", d => labelPositions.get(d.event))
@@ -396,24 +484,32 @@
           .style("opacity", d => selectedDevelopers.has("All") ? 1 : 
             (selectedDevelopers.has(d.developer) ? 1 : 0.2));
 
-        // Time label, moved below the marker
+        // Add this helper function to calculate text width
+        function getTextWidth(text, fontSize = '1rem') {
+          const canvas = document.createElement('canvas');
+          const context = canvas.getContext('2d');
+          context.font = `${fontSize} sans-serif`;
+          return context.measureText(text).width;
+        }
+
+        // Update time label position with overlap detection using timeLabelPositions
         group.selectAll(".label-time")
           .data(d => [d])
           .join("text")
           .attr("class", "label-time")
-          .attr("y", 30)
           .attr("text-anchor", "middle")
-          .style("font-size", "0.75rem")
+          .style("font-size", "0.8rem")
           .style("fill", "#374151")
-          .text(d => d.time + "s")
+          .text(d => {
+            const date = new Date(d.time);
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+          })
           .transition().duration(duration)
-          .style("opacity", d => {
-            if (d.position < currentDomain[0]) return 0;
-            if (selectedDevelopers.has("All")) {
-              return calculateOpacity(d, data, x);
-            }
-            return selectedDevelopers.has(d.developer) ? 1 : 0.2;
-          });
+          .attr("y", d => timeLabelPositions.get(d.event))
+          .style("opacity", 1);
+
+        // *** Updated reordering: sort the existing group selection ***
+        group.sort((a, b) => labelPositions.get(b.event) - labelPositions.get(a.event));
 
         // We add click handlers to each group's circles
         group.on("click", (event, d) => zoomToEvent(d));
@@ -473,68 +569,85 @@
 
       // Attach the new event listener to the "30s" button
       document.getElementById('zoom30Btn').addEventListener('click', function() {
-        zoomToThreshold(30);
+        zoomToThreshold(40); // Corresponds to Q1 2023
       });
 
       // Attach event listeners for additional time threshold buttons
       document.getElementById('zoom60Btn').addEventListener('click', function() {
-        zoomToThreshold(60);
+        zoomToThreshold(60); // Corresponds to Q2 2023
       });
       document.getElementById('zoom75Btn').addEventListener('click', function() {
-        zoomToThreshold(75);
+        zoomToThreshold(75); // Corresponds to Q3 2023
       });
       document.getElementById('zoom90Btn').addEventListener('click', function() {
-        zoomToThreshold(90);
+        zoomToThreshold(90); // Corresponds to Q4 2023
       });
       document.getElementById('zoom95Btn').addEventListener('click', function() {
-        zoomToThreshold(95);
+        zoomToThreshold(95); // Corresponds to Q1 2024
       });
 
       // Initial render
       render();
 
-      // Set default description to first event
+      // Set default description to first event and paragraph to first description
+      const firstEvent = data[0];
       d3.select("#eventDescription")
-        .text(data[0].event)
+        .text(firstEvent.event)
         .classed("visible", true);
+      
+      d3.select("#modelDescription")
+        .text(firstEvent.description)
+        .style("opacity", 1);
 
       // Set initial stats based on the first data object
-      updateStats(data[0]);
+      updateStats(firstEvent);
 
       // New function to update the stats panel based on the marker's data
       function updateStats(d) {
-        // Remove visible class from all stats in both statsBox and statsBox2
-        const statElements = document.querySelectorAll('#statsBox .title-transition, #statsBox2 .title-transition');
+        const statElements = document.querySelectorAll('#statsBox .title-transition, #statsBox2 .title-transition, #statsBox3 .title-transition');
         statElements.forEach(el => el.classList.remove('visible'));
         
-        // Update values and add visible class back after a short delay
         setTimeout(() => {
-          document.getElementById('parametersValue').textContent = d.parameters;
-          document.getElementById('flopsValue').textContent = d.flops;
-          document.getElementById('layersValue').textContent = d.layers;
-          document.getElementById('gpusValue').textContent = d.gpus;
-          document.getElementById('developerValue').textContent = d.developer;
+          // Update the description
+          document.getElementById('modelDescription').textContent = d.description;
           
-          // Update the new stats for statsBox2
-          document.getElementById('speedValue').textContent = d.speed;
-          document.getElementById('apiPriceValue').textContent = d.apiPrice;
-          document.getElementById('trainingCostValue').textContent = d.trainingCost;
+          // Architecture stats
+          document.getElementById('parameterCountValue').textContent = d.parameterCount;
+          document.getElementById('layersValue').textContent = d.layers;
+          document.getElementById('attentionHeadsValue').textContent = d.attentionHeads;
+          document.getElementById('hiddenSizeValue').textContent = d.hiddenSize;
+          document.getElementById('vocabSizeValue').textContent = d.vocabSize;
+          document.getElementById('contextWindowValue').textContent = d.contextWindow;
+          
+          // Training & Performance stats
+          document.getElementById('trainingTokensValue').textContent = d.trainingTokens;
+          document.getElementById('trainingStepsValue').textContent = d.trainingSteps;
+          document.getElementById('flopsValue').textContent = d.flops;
+          document.getElementById('memoryFootprintValue').textContent = d.memoryFootprint;
+          document.getElementById('energyConsumptionValue').textContent = d.energyConsumption;
+          document.getElementById('inferenceLatencyValue').textContent = d.inferenceLatency;
+          document.getElementById('throughputValue').textContent = d.throughput;
+          
+          // API Cost stats
+          document.getElementById('inputCostValue').textContent = d.inputCost;
+          document.getElementById('outputCostValue').textContent = d.outputCost;
           
           statElements.forEach(el => el.classList.add('visible'));
           
-          // Update the event title which will become the new originalTitle
           const description = d3.select("#eventDescription");
           description.text(d.event);
         }, 200);
       }
 
-      // Add this after the updateStats function
+      // Update the initializeStatHovers function
       function initializeStatHovers() {
         const description = d3.select("#eventDescription");
+        const paragraph = d3.select("#descriptionBox p");
         let originalTitle = '';
+        let originalParagraph = paragraph.text();
 
-        // Get all elements with cursor-pointer in the stats box
-        const statElements = document.querySelectorAll('#statsBox .cursor-pointer');
+        // Get all elements with cursor-pointer in both stats boxes
+        const statElements = document.querySelectorAll('#statsBox .cursor-pointer, #statsBox2 .cursor-pointer, #statsBox3 .cursor-pointer');
         
         statElements.forEach(element => {
           element.addEventListener('mouseenter', function() {
@@ -543,20 +656,32 @@
               originalTitle = description.text();
             }
             
+            const statName = this.dataset.stat;
+            
             // Update the title with the stat name
             description.classed("visible", false);
+            paragraph.style("opacity", 0);
+            
             setTimeout(() => {
-              description.text(this.dataset.stat);
+              description.text(statName);
+              paragraph.text(statDescriptions[statName]);
+              
               description.classed("visible", true);
+              paragraph.style("opacity", 1);
             }, 200);
           });
 
           element.addEventListener('mouseleave', function() {
-            // Restore the original title
+            // Restore the original title and paragraph
             description.classed("visible", false);
+            paragraph.style("opacity", 0);
+            
             setTimeout(() => {
               description.text(originalTitle);
+              paragraph.text(originalParagraph);
+              
               description.classed("visible", true);
+              paragraph.style("opacity", 1);
             }, 200);
           });
         });
