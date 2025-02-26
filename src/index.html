@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/ >
+		<title>Smoothed D3.js Radar Chart</title>
+
+		<!-- Google fonts -->
+		<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,300' rel='stylesheet' type='text/css'>
+		<link href='https://fonts.googleapis.com/css?family=Raleway' rel='stylesheet' type='text/css'>
+		<!-- Add Roboto Mono font -->
+		<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300;400&display=swap" rel="stylesheet">
+
+		<!-- Tailwind CSS -->
+		<script src="https://cdn.tailwindcss.com"></script>
+
+		<!-- D3.js -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
+		
+		<style>
+			/* Keep minimal custom CSS for D3-specific styling */
+			body {
+				fill: #242424;
+				text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, -1px 0 0 #fff, 0 -1px 0 #fff;
+			}
+			
+			.legend {
+				fill: #999999;
+			}
+			
+			.tooltip {
+				fill: #333333;
+			}
+            
+            .legend-item.disabled .legend-color {
+                filter: grayscale(100%) opacity(50%);
+            }
+            
+            .legend-item.disabled {
+                opacity: 0.5;
+            }
+            
+            .highlight {
+                background-color: rgba(200, 200, 200, 0.3);
+            }
+            
+            .table-header {
+                position: sticky;
+                top: 0;
+                background-color: #fff;
+                z-index: 1;
+            }
+		</style>
+	
+	</head>
+	<body class="font-mono text-xs font-light text-center cursor-default flex justify-center items-start min-h-screen">
+		<div class="flex w-full p-8 box-border">
+			<div class="relative self-start mt-20">
+                <div class="absolute z-10 top-[3rem] left-0 w-full h-[10px] bg-slate-300/50 rounded-lg"></div>
+				<table class="-z-10 w-[50rem] border-collapse text-2xl text-left rounded-xl overflow-hidden" id="model-data-table">
+					<!-- Table will be populated with JavaScript -->
+				</table>
+			</div>
+			<!--<div class="radarChart w-1/2 min-w-[300px] ml-2"></div>-->
+			<!--<div class="chart-legend flex flex-col justify-center items-start ml-2 text-sm mr-6"></div>-->
+		</div>
+
+		<script src="radarChart.js"></script>	
+		<script>
+      
+      /* Radar chart design created by Nadieh Bremer - VisualCinnamon.com */
+      
+			// Set-Up
+			var margin = {top: 80, right: 10, bottom: 60, left: 10},
+				width = Math.min(1000, window.innerWidth * 0.5) - margin.left - margin.right,
+				height = Math.min(width, window.innerHeight * 0.7 - margin.top - margin.bottom);
+					
+			// Data
+			var data = [
+					  [//GPT-4
+						{axis:"Accuracy",value:0.42},
+						{axis:"Reasoning",value:0.45},
+						{axis:"Creativity",value:0.40},
+						{axis:"Knowledge",value:0.38},
+						{axis:"Instruction Following",value:0.44},
+						{axis:"Code Generation",value:0.41},
+						{axis:"Language Understanding",value:0.47},
+						{axis:"Safety/Alignment",value:0.43}			
+					  ],[//Claude
+						{axis:"Accuracy",value:0.39},
+						{axis:"Reasoning",value:0.42},
+						{axis:"Creativity",value:0.38},
+						{axis:"Knowledge",value:0.35},
+						{axis:"Instruction Following",value:0.46},
+						{axis:"Code Generation",value:0.36},
+						{axis:"Language Understanding",value:0.44},
+						{axis:"Safety/Alignment",value:0.47}
+					  ],[//Llama
+						{axis:"Accuracy",value:0.35},
+						{axis:"Reasoning",value:0.36},
+						{axis:"Creativity",value:0.32},
+						{axis:"Knowledge",value:0.30},
+						{axis:"Instruction Following",value:0.35},
+						{axis:"Code Generation",value:0.33},
+						{axis:"Language Understanding",value:0.38},
+						{axis:"Safety/Alignment",value:0.34}
+					  ]
+					];
+					
+			// Draw the Chart
+			var color = d3.scale.ordinal()
+				.range(["#00BFFF","#8A2BE2","#FF7F50"]);
+				
+			var radarChartOptions = {
+			  w: width,
+			  h: height,
+			  margin: margin,
+			  maxValue: 0.5,
+			  levels: 5,
+			  roundStrokes: true,
+			  color: color
+			};
+			//Call function to draw the Radar chart
+			RadarChart(".radarChart", data, radarChartOptions);
+            
+            // Model names for the legend
+            var models = ["GPT-4", "Claude", "Llama"];
+            
+            // Track visibility state - all visible initially
+            var modelVisibility = [true, true, true];
+            
+            // Create Legend 
+            var legendDiv = d3.select(".chart-legend");
+            
+            // Add a div for each model
+            models.forEach(function(model, i) {
+                var item = legendDiv.append("div")
+                    .attr("class", "legend-item flex items-center my-2 px-2 py-1 rounded transition-all duration-200 cursor-pointer w-full")
+                    .attr("id", "legend-item-" + i);
+                
+                // Add colored square
+                item.append("div")
+                    .attr("class", "legend-color w-4 h-4 rounded mr-2 flex-shrink-0")
+                    .style("background-color", color(i))
+                    .style("border", "1px solid rgba(0,0,0,0.2)");
+                
+                // Add model name
+                item.append("div")
+                    .text(model);
+                
+                // Add click handler for toggling visibility
+                item.on("click", function() {
+                    // Toggle the visibility state
+                    modelVisibility[i] = !modelVisibility[i];
+                    
+                    // Update the legend item appearance
+                    d3.select(this)
+                        .classed("disabled", !modelVisibility[i]);
+                    
+                    // Update the radar chart visibility
+                    updateChartVisibility();
+                    
+                    // Update table row visibility
+                    updateTableVisibility();
+                });
+            });
+
+            // Function to update chart visibility based on modelVisibility array
+            function updateChartVisibility() {
+                // Update each radar area based on visibility state
+                d3.selectAll(".radarArea").each(function(d, i) {
+                    d3.select(this).style("display", modelVisibility[i] ? "block" : "none");
+                });
+                
+                // Also update the outlines
+                d3.selectAll(".radarStroke").each(function(d, i) {
+                    d3.select(this).style("display", modelVisibility[i] ? "block" : "none");
+                });
+                
+                // And the circles/dots
+                d3.selectAll(".radarCircleWrapper").each(function(d, i) {
+                    d3.select(this).style("display", modelVisibility[i] ? "block" : "none");
+                });
+                
+                // Also hide the invisible circles used for tooltips
+                d3.selectAll(".radarInvisibleCircle").each(function(d, i) {
+                    // Find parent wrapper's index
+                    var wrapperIndex = this.parentNode.__data__ ? 
+                        Array.prototype.indexOf.call(d3.selectAll(".radarCircleWrapper").nodes(), this.parentNode) : -1;
+                    
+                    if (wrapperIndex >= 0) {
+                        d3.select(this).style("display", modelVisibility[wrapperIndex] ? "block" : "none");
+                    }
+                });
+            }
+            
+            // Function to update table visibility based on modelVisibility array
+            function updateTableVisibility() {
+                models.forEach(function(model, i) {
+                    d3.selectAll(".model-row-" + i).style("display", modelVisibility[i] ? "table-row" : "none");
+                });
+            }
+
+            // Create data table
+            function createDataTable() {
+                var table = d3.select("#model-data-table");
+                
+                // Create table header
+                var thead = table.append("thead").attr("class", "table-header");
+                var headerRow = thead.append("tr");
+                
+                // Add headers
+                headerRow.append("th").attr("class", "py-1.5 px-2 pb-6").text("Capability");
+                models.forEach(function(model) {
+                    headerRow.append("th").attr("class", "py-1.5 px-2 pb-6").text(model);
+                });
+                
+                // Create table body
+                var tbody = table.append("tbody");
+                
+                // Get all axes (capabilities)
+                var axes = data[0].map(function(d) { return d.axis; });
+                
+                // Create a row for each capability
+                axes.forEach(function(axis, axisIndex) {
+                    var row = tbody.append("tr").attr("class", "hover:bg-gray-100 hover:rounded-xl group");
+                    
+                    // Add capability name
+                    row.append("td").attr("class", "py-1.5 px-2 group-hover:first:rounded-l-xl").text(axis);
+                    
+                    // Add value for each model
+                    models.forEach(function(model, modelIndex) {
+                        row.append("td")
+                            .attr("class", "model-row-" + modelIndex + " py-1.5 px-2" + 
+                                  (modelIndex === models.length - 1 ? " group-hover:last:rounded-r-xl" : ""))
+                            .text(data[modelIndex][axisIndex].value.toFixed(2));
+                    });
+                });
+            }
+            
+            // Call function to create the data table
+            createDataTable();
+
+            // Add window resize handler to redraw the chart when window size changes
+            window.addEventListener('resize', function() {
+                if (window.innerWidth <= 900) {
+                    // For mobile/tablet view
+                    var margin = {top: 60, right: 60, bottom: 40, left: 60},
+                        width = Math.min(450, window.innerWidth * 0.9) - margin.left - margin.right,
+                        height = width;
+                    
+                    // Update classes for responsive design
+                    d3.select(".visualization-container")
+                        .attr("class", "flex flex-col items-center w-full max-w-[1200px] py-5 px-1 box-border");
+                    
+                    d3.select(".radarChart")
+                        .attr("class", "w-full flex justify-center items-center min-w-[300px] mb-7 order-1");
+                    
+                    d3.select(".data-table-container")
+                        .attr("class", "w-full mr-0 mt-7 max-h-[500px] overflow-y-auto overflow-x-visible max-w-[600px] min-w-[280px] order-3");
+                    
+                    d3.select(".chart-legend")
+                        .attr("class", "w-full ml-0 flex flex-row flex-wrap justify-center max-w-[600px] order-2");
+                    
+                } else {
+                    // For desktop view
+                    var margin = {top: 80, right: 80, bottom: 60, left: 80},
+                        width = Math.min(600, window.innerWidth * 0.5) - margin.left - margin.right,
+                        height = Math.min(width, window.innerHeight * 0.7 - margin.top - margin.bottom);
+                    
+                    // Reset to desktop classes
+                    d3.select(".visualization-container")
+                        .attr("class", "flex flex-row items-center justify-between w-full max-w-[1200px] py-5 px-1 box-border");
+                    
+                    d3.select(".radarChart")
+                        .attr("class", "w-1/2 flex justify-center items-center min-w-[300px] ml-2");
+                    
+                    d3.select(".data-table-container")
+                        .attr("class", "mr-2 w-[30%] max-h-[500px] overflow-y-auto overflow-x-visible min-w-[220px] self-start");
+                    
+                    d3.select(".chart-legend")
+                        .attr("class", "flex flex-col justify-center items-start ml-2 text-sm w-[15%] min-w-[120px]");
+                }
+                
+                // Update chart options
+                radarChartOptions.w = width;
+                radarChartOptions.h = height;
+                radarChartOptions.margin = margin;
+                
+                // Clear existing SVG and redraw
+                d3.select(".radarChart").select("svg").remove();
+                RadarChart(".radarChart", data, radarChartOptions);
+                
+                // Reapply visibility settings
+                updateChartVisibility();
+                
+                // Reattach event listeners
+                setTimeout(attachEventListeners, 100);
+            });
+
+            // Extract the event listener attachment code to a function so we can reuse it
+            function attachEventListeners() {
+                // Find all the radar areas (polygons/paths) in the chart
+                d3.selectAll(".radarArea").each(function(d, i) {
+                    // Add event listeners to each radar area
+                    d3.select(this)
+                        .on("mouseover.highlight", function() {
+                            // Highlight the corresponding legend item
+                            d3.select("#legend-item-" + i).classed("highlight", true);
+                        })
+                        .on("mouseout.highlight", function() {
+                            // Remove highlight from the legend item
+                            d3.select("#legend-item-" + i).classed("highlight", false);
+                        });
+                });
+            }
+
+            // After the radar chart is drawn, add event listeners
+            setTimeout(attachEventListeners, 100);
+
+            // Update the original event listener code to use the function
+            setTimeout(function() {
+                attachEventListeners();
+                
+                // Also add listeners to legend items for bidirectional highlighting
+                models.forEach(function(model, i) {
+                    d3.select("#legend-item-" + i)
+                        .on("mouseover", function() {
+                            // Only highlight if the model is visible
+                            if (modelVisibility[i]) {
+                                // Highlight self
+                                d3.select(this).classed("highlight", true);
+                                // Simulate mouseover on the corresponding radar area
+                                var radarArea = d3.selectAll(".radarArea").filter(function(d, j) { return j === i; });
+                                if (!radarArea.empty()) {
+                                    // Get the original mouseover event handler
+                                    var originalEvent = d3.select(radarArea.node()).on("mouseover");
+                                    if (originalEvent) originalEvent.apply(radarArea.node(), []);
+                                }
+                                
+                                // Highlight corresponding table cells
+                                d3.selectAll(".model-row-" + i).style("background-color", "rgba(200, 200, 200, 0.3)");
+                            }
+                        })
+                        .on("mouseout", function() {
+                            // Remove highlight from self
+                            d3.select(this).classed("highlight", false);
+                            // Simulate mouseout on the corresponding radar area
+                            var radarArea = d3.selectAll(".radarArea").filter(function(d, j) { return j === i; });
+                            if (!radarArea.empty()) {
+                                // Get the original mouseout event handler
+                                var originalEvent = d3.select(radarArea.node()).on("mouseout");
+                                if (originalEvent) originalEvent.apply(radarArea.node(), []);
+                            }
+                            
+                            // Remove highlight from table cells
+                            d3.selectAll(".model-row-" + i).style("background-color", "");
+                        });
+                });
+            }, 100);
+		</script>
+	</body>
+</html>
